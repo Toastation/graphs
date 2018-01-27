@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -27,13 +28,12 @@ public:
 	}
 
 	/*
-	 * @brief link the current node to the given one
-	 * @param neighbor the new node to link to
+	 * @brief adds a new edge to the node
+	 * @param the new edge
 	 */
-	void linkTo(Node* neighbor) {
-		if (neighbor) {
-			adjacencyList.push_back(neighbor);
-			neighbor->linkTo(this);
+	void addEdge(Edge<T>* edge) {
+		if (edge) {
+			adjacencyList.push_back(edge);
 		} else {
 			// TODO: error handling
 		}
@@ -80,7 +80,7 @@ private:
 	Node<T>* start;
 	Node<T>* end;
 public:
-	Edge(Node* start, Node* end, T data = 0, bool marked = false) {
+	Edge(Node<T>* start, Node<T>* end, T data = 0, bool marked = false) {
 		this->start = start;
 		this->end = end;
 		this->data = data;
@@ -91,7 +91,7 @@ public:
 	* @brief the edge's value
 	* @return the edge's value
 	*/
-	Node* getStart() {
+	Node<T>* getStart() {
 		return start;
 	}
 
@@ -99,7 +99,7 @@ public:
 	* @brief the edge's value
 	* @return the edge's value
 	*/
-	Node getEnd() {
+	Node<T> getEnd() {
 		return end;
 	}
 
@@ -126,17 +126,60 @@ private:
 	std::vector<Node<T>*> nodes;
 	std::vector<Edge<T>*> edges;
 public:
-	Graph(int reserveSize = RESERVE_SIZE_DEFAULT);
-	Graph(std::vector<Node<T>*>& nodes, std::vector<Edge<T>*>& edges);
+	Graph(int reserveSize = RESERVE_SIZE_DEFAULT) {
+		this->nodes.reserve(reserveSize);
+		this->edges.reserve(reserveSize);
+	}
+
+	Graph(std::vector<Node<T>*>& nodes, std::vector<Edge<T>*>& edges) {
+		this->nodes = nodes;
+		this->edges = edges;
+	}
+
+	void addNode(Node<T>* node) {
+		if (node) {
+			nodes.push_back(node);
+		}
+		else {
+			// TODO: error handling
+		}
+	}
+
+	void addNode(std::string label, T data, bool marked = false, std::vector<Node<T>*> adjacencyList = {}) {
+		Node<T>* newNode = new Node<T>(label, data, marked);
+		addNode(newNode);
+		if (!adjacencyList.empty()) {
+			for (auto nodeIt = adjacencyList.begin(); nodeIt != adjacencyList.end(); nodeIt++) {
+				linkNodes(newNode, *nodeIt);
+				// TODO add unrecognized nodes to the vector
+			}
+		}
+	}
 	
-	void addNode(Node<T>* node);
-	void addNode(std::string label, T data, bool marked = false, std::vector<Node<T>*>& adjacencyList = {});
 	void linkNodes(std::string node1, std::string node2);
-	void linkNodes(Node<T>* node1, Node<T>* node2);
+	void linkNodes(Node<T>* node1, Node<T>* node2) {
+		Edge<T>* newEdge = new Edge<T>(node1, node2);
+		if (node1 && node2 && newEdge) {
+			edges.push_back(newEdge);
+			node1->addEdge(newEdge);
+			node2->addEdge(newEdge);
+		} else {
+			// TODO: error handling
+		}
+	}
 	void unlinkNodes(std::string node1, std::string node2);
 	void unlinkNodes(Node<T>* node1, Node<T>* node2);
 	void deleteNode(Node<T>* node);
 	void deleteNode(std::string node);
+
+	void printNodes() {
+		std::cout << "[ ";
+		for (auto nodeIt = nodes.begin(); nodeIt != nodes.end(); nodeIt++) {
+			Node<T>* node = *nodeIt;
+			std::cout << node->getLabel() << " ";
+		}
+		std::cout << "]" << std::endl;
+	}
 
 	Node<T>* getNode(std::string node);
 	void freeAll();

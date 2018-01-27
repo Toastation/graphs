@@ -87,6 +87,7 @@ int main() {
 	float lastTickTime = 0.0f;
 	float delta = 0.0f;
 
+	app.init();
 
 	while (!glfwWindowShouldClose(window)) {
 		float currentTickTime = (float)glfwGetTime();

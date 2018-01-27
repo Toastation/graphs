@@ -1,8 +1,10 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #define RESERVE_SIZE_DEFAULT 20
 
@@ -16,34 +18,30 @@ private:
 	T data;
 	bool marked;
 	int posX, posY;
-	std::vector<Edge<T>*> adjacencyList;
+	std::vector<const Edge<T>*> adjacencyList;
 public:
-	Node(std::string label, T data, bool marked = false, int posX = 0, int posY = 0, std::vector<Node*> = {}) {
+	Node(std::string label, T data, bool marked = false, int posX = 0, int posY = 0) {
 		this->label = label;
 		this->data = data;
 		this->marked = marked;
 		this->posX = posX;
 		this->posY = posY;
-		this->adjacencyList = adjacencyList;
+		this->adjacencyList = {};
 	}
 
 	/*
-	 * @brief adds a new edge to the node
-	 * @param the new edge
+	 * @brief adds a new edge to the node's adjacency list. Stores a const raw pointer equivalent of the unique pointer
+	 * @param edge a reference to the unique pointer of the new edge
 	 */
-	void addEdge(Edge<T>* edge) {
-		if (edge) {
-			adjacencyList.push_back(edge);
-		} else {
-			// TODO: error handling
-		}
+	void addEdge(const std::unique_ptr<Edge<T>>& edge) {
+		adjacencyList.push_back(edge.get());
 	}
 
 	/*
-	 * @brief how many nodes is this node connected to
+	 * @brief returns the number of edges connected to this node
 	 * @return the size of the adjacency list
 	 */
-	int getNumberOfNeighbors() {
+	int getNumberOfEdges() {
 		return adjacencyList.size();
 	}
 
@@ -75,14 +73,16 @@ public:
 template<typename T>
 class Edge {
 private:
+	std::string label;
 	T data;
 	bool marked;
-	Node<T>* start;
-	Node<T>* end;
+	const Node<T>* start;
+	const Node<T>* end;
 public:
-	Edge(Node<T>* start, Node<T>* end, T data = 0, bool marked = false) {
-		this->start = start;
-		this->end = end;
+	Edge(std::string label, const std::unique_ptr<Node<T>>& start, const std::unique_ptr<Node<T>>& end, T data = 0, bool marked = false) {
+		this->label = label;
+		this->start = start.get();
+		this->end = end.get();
 		this->data = data;
 		this->marked = marked;
 	}
@@ -91,7 +91,7 @@ public:
 	* @brief the edge's value
 	* @return the edge's value
 	*/
-	Node<T>* getStart() {
+	const Node<T>* getStart() {
 		return start;
 	}
 
@@ -99,7 +99,7 @@ public:
 	* @brief the edge's value
 	* @return the edge's value
 	*/
-	Node<T> getEnd() {
+	const Node<T> getEnd() {
 		return end;
 	}
 
@@ -123,50 +123,51 @@ public:
 template<typename T>
 class Graph {
 private:
-	std::vector<Node<T>*> nodes;
-	std::vector<Edge<T>*> edges;
+	std::unordered_map<std::string, std::unique_ptr<Node<T>>> nodes;
+	std::unordered_map<std::string, std::unique_ptr<Edge<T>>> edges;
 public:
 	Graph(int reserveSize = RESERVE_SIZE_DEFAULT) {
 		this->nodes.reserve(reserveSize);
 		this->edges.reserve(reserveSize);
 	}
 
-	Graph(std::vector<Node<T>*>& nodes, std::vector<Edge<T>*>& edges) {
-		this->nodes = nodes;
-		this->edges = edges;
-	}
-
-	void addNode(Node<T>* node) {
-		if (node) {
-			nodes.push_back(node);
-		}
-		else {
-			// TODO: error handling
-		}
-	}
-
-	void addNode(std::string label, T data, bool marked = false, std::vector<Node<T>*> adjacencyList = {}) {
-		Node<T>* newNode = new Node<T>(label, data, marked);
-		addNode(newNode);
-		if (!adjacencyList.empty()) {
-			for (auto nodeIt = adjacencyList.begin(); nodeIt != adjacencyList.end(); nodeIt++) {
-				linkNodes(newNode, *nodeIt);
-				// TODO add unrecognized nodes to the vector
-			}
-		}
+	/*
+	 * @brief allocates a new node, stores it into a unique pointer and adds it to the graph
+	 * @param label label of the node
+	 * @param data data of the node
+	 * @param marked is the node marked 
+	 */
+	void addNode(std::string label, T data, bool marked = false) {
+		nodes.insert(std::make_pair(label, std::make_unique<Node<T>>(label, data, marked)));
 	}
 	
-	void linkNodes(std::string node1, std::string node2);
-	void linkNodes(Node<T>* node1, Node<T>* node2) {
-		Edge<T>* newEdge = new Edge<T>(node1, node2);
-		if (node1 && node2 && newEdge) {
-			edges.push_back(newEdge);
+	/*
+	 * @brief allocates a new edge, stores it into a unique pointer and adds it to the graph
+	 * @param label label of the edge 
+	 * @param node1 starting node of the edge
+	 * @param node2 ending node of the edge 
+	 */
+	void linkNodes(std::string label, const std::unique_ptr<Node<T>>& node1, const std::unique_ptr<Node<T>>& node2) {
+		if (node1 && node2) {
+			edges.insert(std::make_pair(label, std::make_unique<Edge<T>>(label, node1, node2)));
+			const std::unique_ptr<Edge<T>>& newEdge = edges[label];
 			node1->addEdge(newEdge);
 			node2->addEdge(newEdge);
 		} else {
 			// TODO: error handling
 		}
 	}
+
+	/*
+	* @brief allocates a new edge, stores it into a unique pointer and adds it to the graph
+	* @param label label of the edge
+	* @param node1 starting node of the edge
+	* @param node2 ending node of the edge
+	*/
+	void linkNodes(std::string label, std::string node1, std::string node2) {
+		linkNodes(label, nodes[node1], nodes[node1]);
+	}
+	
 	void unlinkNodes(std::string node1, std::string node2);
 	void unlinkNodes(Node<T>* node1, Node<T>* node2);
 	void deleteNode(Node<T>* node);
@@ -175,12 +176,8 @@ public:
 	void printNodes() {
 		std::cout << "[ ";
 		for (auto nodeIt = nodes.begin(); nodeIt != nodes.end(); nodeIt++) {
-			Node<T>* node = *nodeIt;
-			std::cout << node->getLabel() << " ";
+			std::cout << nodeIt->first << ", ";
 		}
 		std::cout << "]" << std::endl;
 	}
-
-	Node<T>* getNode(std::string node);
-	void freeAll();
 };

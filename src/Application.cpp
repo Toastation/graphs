@@ -5,9 +5,7 @@ Application::Application() {
 }
 
 void Application::init() {
-	Graph<int> g;
-	g.addNode("node1", 5);
-	g.printNodes();
+	projectionMatrix = glm::mat4(1.0f);
 }
 
 void Application::update(float delta) {

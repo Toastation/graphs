@@ -39,6 +39,23 @@ public:
 	}
 
 	/*
+	 * @brief deletes an edge connected to this node
+	 * @param edge the label of the edge
+	 */
+	void deleteEdge(std::string edge) {
+		auto it = adjacencyList.begin();
+		while (it != adjacencyList.end()) {
+			const Edge<T>* e = *it;
+			if (e->getLabel() == edge) {
+				it = adjacencyList.erase(it);
+			}
+			else {
+				it++;
+			}
+		}
+	}
+
+	/*
 	 * @brief the degree of nodes
 	 * @return the size of the adjacency list
 	 */
@@ -50,7 +67,7 @@ public:
 	* @brief the node's label
 	* @return the node's label
 	*/
-	std::string& getLabel() const {
+	std::string getLabel() const {
 		return label;
 	}
 
@@ -102,6 +119,14 @@ public:
 		this->end = end.get();
 		this->data = data;
 		this->marked = marked;
+	}
+
+	/*
+	* @brief the node's label
+	* @return the node's label
+	*/
+	std::string getLabel() const {
+		return label;
 	}
 
 	/*
@@ -190,8 +215,16 @@ public:
 		linkNodes(label, nodes[node1], nodes[node2]);
 	}
 	
-	void unlinkNodes(std::string node1, std::string node2);
-	void unlinkNodes(Node<T>* node1, Node<T>* node2);
+	/*
+	 * @brief deletes an edge between 2 nodes
+	 * @param edge the edge to delete
+	 */
+	void unlinkNodes(std::string edge) {
+
+		nodes[edges[edge]->getStart()->getLabel()]->deleteEdge(edge);
+		nodes[edges[edge]->getEnd()->getLabel()]->deleteEdge(edge);
+		edges.erase(edge);
+	}
 
 	/*
 	 * @brief returns a const reference to the map of nodes

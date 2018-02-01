@@ -46,6 +46,6 @@ void Application::update() {
 void Application::render() {
 	window.clear();
 	window.setView(cam.getView());
-	Renderer::drawNode(window, 0.0f, 0.0f);
+	Renderer::drawGraph(window, *(ResourceManager::graphs["G1"]));
 	window.display();
 }

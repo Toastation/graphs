@@ -18,10 +18,10 @@ private:
 	std::string label;
 	T data;
 	bool marked;
-	int posX, posY;
+	float posX, posY;
 	std::vector<const Edge<T>*> adjacencyList;
 public:
-	Node(std::string label, T data, bool marked = false, int posX = 0, int posY = 0) {
+	Node(std::string label, T data, bool marked = false, float posX = 0, float posY = 0) {
 		this->label = label;
 		this->data = data;
 		this->marked = marked;
@@ -39,10 +39,10 @@ public:
 	}
 
 	/*
-	 * @brief returns the number of edges connected to this node
+	 * @brief the degree of nodes
 	 * @return the size of the adjacency list
 	 */
-	int getNumberOfEdges() const {
+	int degree() const {
 		return adjacencyList.size();
 	}
 
@@ -66,7 +66,7 @@ public:
 	 * @brief the node's x coordinate
 	 * @return the node's x coordinate
 	 */
-	int getPosX() const {
+	float getPosX() const {
 		return posX;
 	}
 
@@ -74,7 +74,7 @@ public:
 	* @brief the node's y coordinate
 	* @return the node's y coordinate
 	*/
-	int getPosY() const {
+	float getPosY() const {
 		return posY;
 	}
 
@@ -108,7 +108,7 @@ public:
 	* @brief the edge's value
 	* @return the edge's value
 	*/
-	const Node<T>* getStart() {
+	const Node<T>* getStart() const {
 		return start;
 	}
 
@@ -116,7 +116,7 @@ public:
 	* @brief the edge's value
 	* @return the edge's value
 	*/
-	const Node<T> getEnd() {
+	const Node<T>* getEnd() const {
 		return end;
 	}
 
@@ -156,9 +156,11 @@ public:
 	 * @param label label of the node
 	 * @param data data of the node
 	 * @param marked is the node marked 
+	 * @param posX the x coordinate of the node
+	 * @param posY the y coordinate of the node
 	 */
-	void addNode(std::string label, T data, bool marked = false) {
-		nodes.insert(std::make_pair(label, std::make_unique<Node<T>>(label, data, marked)));
+	void addNode(std::string label, T data, bool marked = false, float posX = 0.0f, float posY = 0.0f) {
+		nodes.insert(std::make_pair(label, std::make_unique<Node<T>>(label, data, marked, posX, posY)));
 	}
 	
 	/*
@@ -179,32 +181,41 @@ public:
 	}
 
 	/*
-	* @brief allocates a new edge, stores it into a unique pointer and adds it to the graph
-	* @param label label of the edge
-	* @param node1 starting node of the edge
-	* @param node2 ending node of the edge
-	*/
+	 * @brief allocates a new edge, stores it into a unique pointer and adds it to the graph
+	 * @param label label of the edge
+	 * @param node1 starting node of the edge
+	 * @param node2 ending node of the edge
+	 */
 	void linkNodes(std::string label, std::string node1, std::string node2) {
-		linkNodes(label, nodes[node1], nodes[node1]);
+		linkNodes(label, nodes[node1], nodes[node2]);
 	}
 	
 	void unlinkNodes(std::string node1, std::string node2);
 	void unlinkNodes(Node<T>* node1, Node<T>* node2);
-	void deleteNode(Node<T>* node);
-	void deleteNode(std::string node);
 
 	/*
 	 * @brief returns a const reference to the map of nodes
 	 * @return a const reference to the map of nodes
 	 */
-	NodesRef_Int getNodes() {
+	NodesRef_Int getNodes() const {
 		return nodes;
 	}
 
+	/*
+	 * @brief returns a const reference to the map of edges
+	 * @return a const reference to the map of edges
+	 */
+	EdgesRef_Int getEdges() const {
+		return edges;
+	}
+
+	/*
+	 * @brief prints all the nodes labels
+	 */
 	void printNodes() {
 		std::cout << "[ ";
 		for (auto nodeIt = nodes.begin(); nodeIt != nodes.end(); nodeIt++) {
-			std::cout << nodeIt->first << ", ";
+			std::cout << nodeIt->first << " ";
 		}
 		std::cout << "]" << std::endl;
 	}

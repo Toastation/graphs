@@ -6,7 +6,7 @@
 
 class ResourceManager {
 public:
-	static std::unordered_map<std::string, Graph<int>> graphs;
+	static std::unordered_map<std::string, std::unique_ptr<Graph<int>>> graphs;
 	static std::unordered_map<std::string, sf::Font> fonts;
 	static sf::RectangleShape nodeRect;
 

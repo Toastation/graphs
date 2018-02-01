@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdlib>
+#include <ctime>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -101,6 +103,22 @@ public:
 	*/
 	bool isMarked() const {
 		return marked;
+	}
+
+	/*
+	 * @brief set the x coordinate of the node
+	 * @param x the new coordinate of the node
+	 */
+	void setPosX(float x) {
+		posX = x;
+	}
+
+	/*
+	 * @brief set the y coordinate of the node
+	 * @param y the new coordinate of the node
+	 */
+	void setPosY(float y) {
+		posY = y;
 	}
 };
 
@@ -220,10 +238,20 @@ public:
 	 * @param edge the edge to delete
 	 */
 	void unlinkNodes(std::string edge) {
-
 		nodes[edges[edge]->getStart()->getLabel()]->deleteEdge(edge);
 		nodes[edges[edge]->getEnd()->getLabel()]->deleteEdge(edge);
 		edges.erase(edge);
+	}
+
+	/*
+	 * @brief randomizes the position of the nodes
+	 */
+	void randomizePos(float x, float y, int width, int height) {
+		std::srand((unsigned int)std::time(nullptr));
+		for (auto it = nodes.begin(); it != nodes.end(); it++) {
+			it->second->setPosX(x + (std::rand() % width) + 1);
+			it->second->setPosY(y + (std::rand() % height) + 1);
+		}
 	}
 
 	/*

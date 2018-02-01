@@ -1,17 +1,51 @@
 #include "Application.h"
 
 Application::Application() {
+	
+}
+
+Application::~Application() {
 
 }
 
 void Application::init() {
-	projectionMatrix = glm::mat4(1.0f);
+	window.create(sf::VideoMode(800, 600), "Graph");
+	//window.setFramerateLimit(60);
+	cam.init(0.0f, 0.0f, 800.0f, 600.0f);
+	ResourceManager::loadData();
 }
 
-void Application::update(float delta) {
+void Application::run() {
+	while (window.isOpen()) {
+		sf::Event event;
+		while (window.pollEvent(event)) {
+			if (event.type == sf::Event::Closed) {
+				window.close();
+			}
+			if (event.type == sf::Event::Resized) {
+				sf::Vector2u size = window.getSize();
+				cam.resize((float)size.x, (float)size.y);
+				std::cout << "* Resizing | width: " << size.x << " | height: " << size.y << std::endl;
+			}
+		}
+		delta = (deltaClock.restart()).asSeconds();
+		inputs();
+		update();
+		render();
+	}
+}
+
+void Application::inputs() {
+	cam.processInputs(delta);
+}
+
+void Application::update() {
 
 }
 
 void Application::render() {
-
+	window.clear();
+	window.setView(cam.getView());
+	Renderer::drawNode(window, 0.0f, 0.0f);
+	window.display();
 }

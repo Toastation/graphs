@@ -1,20 +1,24 @@
 #pragma once
-#include <map>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
+#include <SFML/Graphics.hpp>
 #include "ResourceManager.h"
-#include "Graph.h"
-#include "Shader.h"
+#include "Renderer.h"
+#include "Camera.h"
 
 class Application {
 private:
-	Graph<int> graph;
-	glm::mat4 projectionMatrix;
+	sf::RenderWindow window;
+	Camera cam;
+	sf::Clock deltaClock;
+	float delta;
 public:
 	Application();
-	
+	~Application();
+
 	void init();
-	void update(float delta);
+	void run();
+	void inputs();
+	void update();
 	void render();
 };
 

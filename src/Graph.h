@@ -8,6 +8,7 @@
 
 #define RESERVE_SIZE_DEFAULT 20
 
+
 template<typename T>
 class Edge;
 
@@ -41,7 +42,7 @@ public:
 	 * @brief returns the number of edges connected to this node
 	 * @return the size of the adjacency list
 	 */
-	int getNumberOfEdges() {
+	int getNumberOfEdges() const {
 		return adjacencyList.size();
 	}
 
@@ -49,7 +50,7 @@ public:
 	* @brief the node's label
 	* @return the node's label
 	*/
-	std::string& getLabel() {
+	std::string& getLabel() const {
 		return label;
 	}
 
@@ -57,15 +58,31 @@ public:
 	 * @brief the node's value
 	 * @return the node's value
 	 */
-	T getData() {
+	T getData() const {
 		return data;
+	}
+
+	/*
+	 * @brief the node's x coordinate
+	 * @return the node's x coordinate
+	 */
+	int getPosX() const {
+		return posX;
+	}
+
+	/*
+	* @brief the node's y coordinate
+	* @return the node's y coordinate
+	*/
+	int getPosY() const {
+		return posY;
 	}
 
 	/*
 	* @brief is the node marked
 	* @return true if the node is marked
 	*/
-	bool isMarked() {
+	bool isMarked() const {
 		return marked;
 	}
 };
@@ -120,6 +137,9 @@ public:
 	}
 };
 
+typedef const std::unordered_map<std::string, std::unique_ptr<Node<int>>>& NodesRef_Int;
+typedef const std::unordered_map<std::string, std::unique_ptr<Edge<int>>>& EdgesRef_Int;
+
 template<typename T>
 class Graph {
 private:
@@ -172,6 +192,14 @@ public:
 	void unlinkNodes(Node<T>* node1, Node<T>* node2);
 	void deleteNode(Node<T>* node);
 	void deleteNode(std::string node);
+
+	/*
+	 * @brief returns a const reference to the map of nodes
+	 * @return a const reference to the map of nodes
+	 */
+	NodesRef_Int getNodes() {
+		return nodes;
+	}
 
 	void printNodes() {
 		std::cout << "[ ";

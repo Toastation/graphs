@@ -37,14 +37,13 @@ void Application::run() {
 
 void Application::inputs() {
 	cam.processInputs(delta);
-
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
-		ResourceManager::graphs["G1"]->randomizePos(cam.getPosition().x - 400, cam.getPosition().y - 300, 800, 600);
+		ResourceManager::graphs["G1"]->randomizePos(cam.getPosition().x - 200, cam.getPosition().y - 150, 400, 300);
 	}
 }
 
 void Application::update() {
-
+	ResourceManager::graphs["G1"]->applyForces();
 }
 
 void Application::render() {

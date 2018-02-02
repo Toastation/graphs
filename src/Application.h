@@ -8,8 +8,8 @@
 class Application {
 private:
 	sf::RenderWindow window;
-	Camera cam;
 	sf::Clock deltaClock;
+	Camera cam;
 	float delta;
 public:
 	Application();

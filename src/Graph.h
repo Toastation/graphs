@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <ctime>
+#include <cmath>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -9,7 +10,6 @@
 #include <unordered_map>
 
 #define RESERVE_SIZE_DEFAULT 20
-
 
 template<typename T>
 class Edge;
@@ -20,15 +20,20 @@ private:
 	std::string label;
 	T data;
 	bool marked;
-	float posX, posY;
+	float posX;
+	float posY;
+	float netForceX;
+	float netForceY;
 	std::vector<const Edge<T>*> adjacencyList;
 public:
-	Node(std::string label, T data, bool marked = false, float posX = 0, float posY = 0) {
+	Node(std::string label, T data, bool marked = false, float posX = 0.0f, float posY = 0.0f) {
 		this->label = label;
 		this->data = data;
 		this->marked = marked;
 		this->posX = posX;
 		this->posY = posY;
+		this->netForceX = 0.0f;
+		this->netForceY = 0.0f;
 		this->adjacencyList = {};
 	}
 
@@ -55,6 +60,22 @@ public:
 				it++;
 			}
 		}
+	}
+
+	/*
+	 * @brief translates the node's position 
+	 */
+	void translate(float dx, float dy) {
+		posX += dx;
+		posY += dy;
+	}
+
+	/*
+	 * @brief applies given changes to the node's net force 
+	 */
+	void applyForce(float fx, float fy) {
+		netForceX += fx;
+		netForceY += fy;
 	}
 
 	/*
@@ -98,6 +119,22 @@ public:
 	}
 
 	/*
+	 * @brief the node's net force x component
+	 * @return the node's net force x component
+	 */
+	float getNetForceX() const {
+		return netForceX;
+	}
+
+	/*
+	 * @brief the node's net force y component
+	 * @return the node's net force y component
+	 */
+	float getNetForceY() const {
+		return netForceY;
+	}
+
+	/*
 	* @brief is the node marked
 	* @return true if the node is marked
 	*/
@@ -119,6 +156,15 @@ public:
 	 */
 	void setPosY(float y) {
 		posY = y;
+	}
+
+	/*
+	* @brief set the y coordinate of the node
+	* @param y the new coordinate of the node
+	*/
+	void setNetForce(float netForceX, float netForceY) {
+		this->netForceX = netForceX;
+		this->netForceY = netForceY;
 	}
 };
 
@@ -188,10 +234,18 @@ class Graph {
 private:
 	std::unordered_map<std::string, std::unique_ptr<Node<T>>> nodes;
 	std::unordered_map<std::string, std::unique_ptr<Edge<T>>> edges;
+	float springRestLength;
+	float springFactor;
+	float repulsiveFactor;
+	float delta;
 public:
 	Graph(int reserveSize = RESERVE_SIZE_DEFAULT) {
 		this->nodes.reserve(reserveSize);
 		this->edges.reserve(reserveSize);
+		this->springRestLength = 50.0f;
+		this->springFactor = 1.0f;
+		this->repulsiveFactor = 6250.0f;
+		this->delta = 0.0004f;
 	}
 
 	/*
@@ -252,6 +306,62 @@ public:
 			it->second->setPosX(x + (std::rand() % width) + 1);
 			it->second->setPosY(y + (std::rand() % height) + 1);
 		}
+	}
+
+	/*
+	 * @brief applies a force-based algorithm on the node's layout
+	 */
+	void applyForces() {
+		float dx = 0.0f;
+		float dy = 0.0f;
+		float fx = 0.0f;
+		float fy = 0.0f;
+		float distance = 0.0f;
+		float distanceSquared = 0.0f;
+		float repulsiveForceMagnitude = 0.0f;
+		float springForceMagnitude = 0.0f;
+		// compute repulsive forces
+		for (auto it1 = nodes.begin(); it1 != (nodes.end()--); it1++) {
+			std::unique_ptr<Node<T>>& node1 = it1->second;
+			for (auto it2 = (nodes.begin()++); it2 != nodes.end(); it2++) {
+				std::unique_ptr<Node<T>>& node2 = it2->second;
+				dx = node1->getPosX() - node1->getPosX();
+				dy = node2->getPosY() - node1->getPosY();
+				if (dx != 0 || dy != 0) {
+					distanceSquared = (dx * dx) + (dy * dy);
+					distance = std::sqrt(distanceSquared);
+					repulsiveForceMagnitude = repulsiveFactor / distanceSquared;
+					fx = (repulsiveForceMagnitude * dx) / distance;
+					fy = (repulsiveForceMagnitude * dy) / distance;
+					node1->applyForce(-fx, -fy);
+					node2->applyForce(fx, fy);
+				}
+			}
+		}
+		// compute spring forces
+		for (auto it = edges.begin(); it != edges.end(); it++) {
+			std::unique_ptr<Node<T>>& node1 = nodes[it->second->getStart()->getLabel()];
+			std::unique_ptr<Node<T>>& node2 = nodes[it->second->getEnd()->getLabel()];
+			dx = node2->getPosX() - node1->getPosX();
+			dy = node2->getPosY() - node1->getPosY();
+			distanceSquared = (dx * dx) + (dy * dy);
+			distance = std::sqrt(distanceSquared);
+			springForceMagnitude = springFactor * (distance - springRestLength);
+			fx = (springForceMagnitude * dx) / distance;
+			fy = (springForceMagnitude * dy) / distance;
+			node1->applyForce(fx, fy);
+			node2->applyForce(-fx, -fy);
+		}
+		// update positions
+		for (auto it = nodes.begin(); it != nodes.end(); it++) {
+			std::unique_ptr<Node<T>>& node = it->second;
+			dx = delta * node->getNetForceX();
+			dy = delta * node->getNetForceY();
+			//std::cout << "dsquared: " << ((dx*dx) + (dy*dy)) << std::endl;
+			node->translate(dx, dy);
+			node->setNetForce(0.0f, 0.0f);
+		}
+		//std::cin.get();
 	}
 
 	/*

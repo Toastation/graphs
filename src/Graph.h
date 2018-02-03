@@ -10,6 +10,7 @@
 #include <unordered_map>
 
 #define RESERVE_SIZE_DEFAULT 20
+#define MAX_DISTANCE_SQUARED 100
 
 template<typename T>
 class Edge;
@@ -238,14 +239,16 @@ private:
 	float springFactor;
 	float repulsiveFactor;
 	float delta;
+	float highestSquaredDistance;
 public:
 	Graph(int reserveSize = RESERVE_SIZE_DEFAULT) {
 		this->nodes.reserve(reserveSize);
 		this->edges.reserve(reserveSize);
-		this->springRestLength = 50.0f;
+		this->springRestLength = 100.0f;
 		this->springFactor = 1.0f;
 		this->repulsiveFactor = 6250.0f;
 		this->delta = 0.0004f;
+		this->highestSquaredDistance = 0.0f;
 	}
 
 	/*
@@ -311,7 +314,7 @@ public:
 	/*
 	 * @brief applies a force-based algorithm on the node's layout
 	 */
-	void applyForces() {
+	void applyForces(float deltaFrame) {
 		float dx = 0.0f;
 		float dy = 0.0f;
 		float fx = 0.0f;
@@ -357,8 +360,17 @@ public:
 			std::unique_ptr<Node<T>>& node = it->second;
 			dx = delta * node->getNetForceX();
 			dy = delta * node->getNetForceY();
+			distanceSquared = (dx * dx) + (dy * dy);
+			if (distanceSquared > highestSquaredDistance) {
+				highestSquaredDistance = distanceSquared;
+			}
+			if (distanceSquared >= MAX_DISTANCE_SQUARED) {
+				float s = std::sqrt(MAX_DISTANCE_SQUARED / distanceSquared);
+				dx *= s;
+				dy *= s;
+			}
 			//std::cout << "dsquared: " << ((dx*dx) + (dy*dy)) << std::endl;
-			node->translate(dx, dy);
+			node->translate(dx*deltaFrame, dy*deltaFrame);
 			node->setNetForce(0.0f, 0.0f);
 		}
 		//std::cin.get();
@@ -378,6 +390,46 @@ public:
 	 */
 	EdgesRef_Int getEdges() const {
 		return edges;
+	}
+
+	/*
+	 * @brief returns the speed factor of nodes translation
+	 * @return the speed factor of nodes translation
+	 */
+	float getDelta() const {
+		return delta;
+	}
+
+	/*
+	 * @brief returns the spring factor of edges
+	 * @return the spring factor of edges
+	 */
+	float getSpringFactor() const {
+		return springFactor;
+	}
+
+	/*
+	 * @brief returns the repulsive factor of nodes
+	 * @return the spring repulsive of nodes
+	 */
+	float getRepulsiveFactor() const {
+		return repulsiveFactor;
+	}
+
+	/*
+	 * @brief returns the length of an edge at rest
+	 * @return the length of an edge at rest
+	 */
+	float getSpringRestLength() const {
+		return springRestLength;
+	}
+
+	float getHighestSquaredDistance() const {
+		return highestSquaredDistance;
+	}
+
+	void setHighestSquaredDistance(float v) {
+		highestSquaredDistance = v;
 	}
 
 	/*

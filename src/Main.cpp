@@ -2,7 +2,9 @@
 
 int main() {
 	Application app;
-	app.init();
+	if (!app.init()) {
+		return EXIT_FAILURE;
+	}
 	app.run();
 	return EXIT_SUCCESS;
 }

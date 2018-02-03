@@ -10,7 +10,7 @@ public:
 	static std::unordered_map<std::string, sf::Font> fonts;
 	static sf::RectangleShape nodeRect;
 
-	static void loadData();
+	static bool loadData();
 private:
 	ResourceManager();
 };

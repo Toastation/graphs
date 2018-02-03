@@ -301,6 +301,14 @@ public:
 	}
 
 	/*
+	 * @brief deletes all nodes and edges
+	 */
+	void clearGraph() {
+		nodes.clear();
+		edges.clear();
+	}
+
+	/*
 	 * @brief randomizes the position of the nodes
 	 */
 	void randomizePos(float x, float y, int width, int height) {

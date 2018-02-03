@@ -12,6 +12,7 @@ public:
 	static std::unordered_map<std::string, sf::Font> fonts;
 	static sf::RectangleShape nodeRect;
 
+	static void generateRandomGraph(std::string graphName, int maxNodes, int maxEdges, int x, int y, int width, int height);
 	static bool loadData();
 private:
 	ResourceManager();

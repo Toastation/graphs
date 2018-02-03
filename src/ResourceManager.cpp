@@ -4,16 +4,29 @@ std::unordered_map<std::string, std::unique_ptr<Graph<int>>> ResourceManager::gr
 std::unordered_map<std::string, sf::Font> ResourceManager::fonts;
 sf::RectangleShape ResourceManager::nodeRect;
 
-static void generateRandomGraph(std::string graphName, int maxNodes, int maxEdges, int x, int y, int width, int height) {
+void ResourceManager::generateRandomGraph(std::string graphName, int maxNodes, int maxEdges, int x, int y, int width, int height) {
 	ResourceManager::graphs[graphName] = std::make_unique<Graph<int>>();
 	std::srand((unsigned int)std::time(nullptr));
-	int nbNodes = std::rand() % maxNodes;
+	int nbNodes = 1 + std::rand() % (maxNodes - 1);
 	int nbEdges = std::rand() % maxEdges;
+	std::cout << "Number of nodes: " << nbNodes << std::endl;
+	std::cout << "Number of edges: " << nbEdges << std::endl;
 	for (int i = 0; i < nbNodes; i++) {
-		std::string nodeName = "N" + std::to_string(i);
-		float nodeX = x + std::rand() % width;
-		float nodeY = y + std::rand() % height;
-		ResourceManager::graphs[graphName]->addNode(nodeName, 0, false, nodeX, nodeY);
+		std::string nodeLabel = "N" + std::to_string(i);
+		float nodeX = (float)(x + std::rand() % width);
+		float nodeY = (float)(y + std::rand() % height);
+		ResourceManager::graphs[graphName]->addNode(nodeLabel, 0, false, nodeX, nodeY);
+	}
+	for (int i = 0; i < nbEdges; i++) {
+		std::string edgeLabel = "E" + std::to_string(i);
+		int startNodeIndex = std::rand() % (nbNodes);
+		int endNodeIndex = std::rand() % (nbNodes);
+		while (endNodeIndex == startNodeIndex) {
+			endNodeIndex = std::rand() % (nbNodes);
+		}
+		std::string startNodeLabel = "N" + std::to_string(startNodeIndex);
+		std::string endNodeLabel = "N" + std::to_string(endNodeIndex);
+		ResourceManager::graphs[graphName]->linkNodes(edgeLabel, startNodeLabel, endNodeLabel);
 	}
 }
 
@@ -32,6 +45,8 @@ bool ResourceManager::loadData() {
 	graphs["G1"]->linkNodes("E6", "N2", "N5");
 	graphs["G1"]->linkNodes("E7", "N3", "N5");
 	graphs["G1"]->linkNodes("E8", "N4", "N5");
+
+	generateRandomGraph("G2", 50, 20, -400, -300, 800, 600);
 
 	if (!(fonts["infoFont"].loadFromFile("res/fonts/arial.ttf"))) {
 		std::cout << "Failed to load res/fonts/arial.ttf" << std::endl;

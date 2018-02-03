@@ -11,7 +11,7 @@ Application::~Application() {
 bool Application::init() {
 	window.create(sf::VideoMode(800, 600), "Graph");
 	//window.setFramerateLimit(60);
-	currentGraph = "G1";
+	currentGraph = "G2";
 	cam.init(0.0f, 0.0f, 800.0f, 600.0f);
 	if (!ResourceManager::loadData()) {
 		std::cout << "Failed to load data" << std::endl;
@@ -65,6 +65,11 @@ void Application::inputs() {
 		ResourceManager::graphs[currentGraph]->randomizePos(cam.getPosition().x - 200, cam.getPosition().y - 150, 400, 300);
 		ResourceManager::graphs[currentGraph]->setHighestSquaredDistance(0.0f);
 		keysProcessed[sf::Keyboard::R] = true;
+	}
+	if (keysPressed[sf::Keyboard::G] && !keysProcessed[sf::Keyboard::G]) {
+		ResourceManager::graphs["G2"]->clearGraph();
+		ResourceManager::generateRandomGraph("G2", 20, 20, cam.getPosition().x - 400, cam.getPosition().y - 300, 800, 600);
+		keysProcessed[sf::Keyboard::G] = true;
 	}
 	if (keysPressed[sf::Keyboard::I] && !keysProcessed[sf::Keyboard::I]) {
 		showInfo = !showInfo;

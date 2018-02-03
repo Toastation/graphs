@@ -4,6 +4,19 @@ std::unordered_map<std::string, std::unique_ptr<Graph<int>>> ResourceManager::gr
 std::unordered_map<std::string, sf::Font> ResourceManager::fonts;
 sf::RectangleShape ResourceManager::nodeRect;
 
+static void generateRandomGraph(std::string graphName, int maxNodes, int maxEdges, int x, int y, int width, int height) {
+	ResourceManager::graphs[graphName] = std::make_unique<Graph<int>>();
+	std::srand((unsigned int)std::time(nullptr));
+	int nbNodes = std::rand() % maxNodes;
+	int nbEdges = std::rand() % maxEdges;
+	for (int i = 0; i < nbNodes; i++) {
+		std::string nodeName = "N" + std::to_string(i);
+		float nodeX = x + std::rand() % width;
+		float nodeY = y + std::rand() % height;
+		ResourceManager::graphs[graphName]->addNode(nodeName, 0, false, nodeX, nodeY);
+	}
+}
+
 bool ResourceManager::loadData() {
 	graphs["G1"] = std::make_unique<Graph<int>>();
 	graphs["G1"]->addNode("N1", 5, false, -200.0f, -200.0f);

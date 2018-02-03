@@ -328,7 +328,7 @@ public:
 			std::unique_ptr<Node<T>>& node1 = it1->second;
 			for (auto it2 = (nodes.begin()++); it2 != nodes.end(); it2++) {
 				std::unique_ptr<Node<T>>& node2 = it2->second;
-				dx = node1->getPosX() - node1->getPosX();
+				dx = node2->getPosX() - node1->getPosX();
 				dy = node2->getPosY() - node1->getPosY();
 				if (dx != 0 || dy != 0) {
 					distanceSquared = (dx * dx) + (dy * dy);

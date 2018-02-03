@@ -22,9 +22,10 @@ bool Application::init() {
 		keysProcessed[i] = false;
 	}
 	animationSpeed = 2000.0f;
-	sf::String infoText("Delta: " + std::to_string(ResourceManager::graphs[currentGraph]->getDelta()));
+	pause = false;
+	showInfo = false;
+	syncSpeed = true;
 	info.setFont(ResourceManager::fonts["infoFont"]);
-	info.setString(infoText);
 	info.setScale(0.5f, 0.5f);
 	info.setPosition(0, 0);
 	info.setFillColor(sf::Color::White);
@@ -73,14 +74,20 @@ void Application::inputs() {
 		syncSpeed= !syncSpeed;
 		keysProcessed[sf::Keyboard::O] = true;
 	}
+	if (keysPressed[sf::Keyboard::P] && !keysProcessed[sf::Keyboard::P]) {
+		pause = !pause;
+		keysProcessed[sf::Keyboard::P] = true;
+	}
 }
 
 void Application::update() {
-	if (syncSpeed) {
-		ResourceManager::graphs[currentGraph]->applyForces(animationSpeed*delta);
-	}
-	else {
-		ResourceManager::graphs[currentGraph]->applyForces(1.0f);
+	if (!pause) {
+		if (syncSpeed) {
+			ResourceManager::graphs[currentGraph]->applyForces(animationSpeed*delta);
+		}
+		else {
+			ResourceManager::graphs[currentGraph]->applyForces(1.0f);
+		}
 	}
 }
 

@@ -13,8 +13,9 @@ private:
 	Camera cam;
 	float delta;
 	float animationSpeed;
-	bool showInfo = false;
-	bool syncSpeed = true;
+	bool pause;
+	bool showInfo;
+	bool syncSpeed;
 	bool keysPressed[sf::Keyboard::KeyCount];
 	bool keysProcessed[sf::Keyboard::KeyCount];
 	sf::Text info;

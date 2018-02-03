@@ -1,4 +1,6 @@
 #pragma once
+#include <ctime>
+#include <cstring>
 #include <string>
 #include <unordered_map>
 #include <SFML/Graphics.hpp>

@@ -8,6 +8,7 @@
 class Application {
 private:
 	sf::RenderWindow window;
+	sf::View defaultView;
 	sf::Clock deltaClock;
 	std::string currentGraph;
 	Camera cam;

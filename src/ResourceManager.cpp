@@ -7,7 +7,7 @@ sf::RectangleShape ResourceManager::nodeRect;
 void ResourceManager::generateRandomGraph(std::string graphName, int maxNodes, int maxEdges, int x, int y, int width, int height) {
 	ResourceManager::graphs[graphName] = std::make_unique<Graph<int>>();
 	std::srand((unsigned int)std::time(nullptr));
-	int nbNodes = 1 + std::rand() % (maxNodes - 1);
+	int nbNodes = 2 + std::rand() % (maxNodes - 2);
 	int nbEdges = std::rand() % maxEdges;
 	std::cout << "Number of nodes: " << nbNodes << std::endl;
 	std::cout << "Number of edges: " << nbEdges << std::endl;

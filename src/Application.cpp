@@ -11,6 +11,8 @@ Application::~Application() {
 bool Application::init() {
 	window.create(sf::VideoMode(800, 600), "Graph");
 	//window.setFramerateLimit(60);
+	defaultView.setSize(800, 600);
+	defaultView.setCenter(400, 300);
 	currentGraph = "G2";
 	cam.init(0.0f, 0.0f, 800.0f, 600.0f);
 	if (!ResourceManager::loadData()) {
@@ -42,6 +44,8 @@ void Application::run() {
 			if (event.type == sf::Event::Resized) {
 				sf::Vector2u size = window.getSize();
 				cam.resize((float)size.x, (float)size.y);
+				defaultView.setCenter(size.x / 2, size.y / 2);
+				defaultView.setSize(size.x, size.y);
 				std::cout << "* Resizing | width: " << size.x << " | height: " << size.y << std::endl;
 			}
 			if (event.type == sf::Event::KeyPressed) {
@@ -62,7 +66,7 @@ void Application::run() {
 void Application::inputs() {
 	cam.processInputs(delta);
 	if (keysPressed[sf::Keyboard::R] && !keysProcessed[sf::Keyboard::R]) {
-		ResourceManager::graphs[currentGraph]->randomizePos(cam.getPosition().x - 200, cam.getPosition().y - 150, 400, 300);
+		ResourceManager::graphs[currentGraph]->randomizePos(cam.getPosition().x - 400, cam.getPosition().y - 300, 800, 400);
 		ResourceManager::graphs[currentGraph]->setHighestSquaredDistance(0.0f);
 		keysProcessed[sf::Keyboard::R] = true;
 	}
@@ -100,7 +104,7 @@ void Application::render() {
 	window.clear();
 	window.setView(cam.getView());
 	Renderer::drawGraph(window, *(ResourceManager::graphs[currentGraph]));
-	window.setView(window.getDefaultView());
+	window.setView(defaultView);
 	if (showInfo) {
 		window.draw(info);
 		sf::String text = sf::String("Delta: " + std::to_string(ResourceManager::graphs[currentGraph]->getDelta()));

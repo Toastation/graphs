@@ -80,6 +80,13 @@ public:
 	}
 
 	/*
+	 * @brief mark or unmark the node
+	 */
+	void setMarked(bool marked) {
+		this->marked = marked;
+	}
+
+	/*
 	 * @brief the degree of nodes
 	 * @return the size of the adjacency list
 	 */
@@ -144,6 +151,14 @@ public:
 	}
 
 	/*
+	 * @brief returns the adjacency list of the node
+	 * @return the adjacency list of the node
+	 */
+	const std::vector<const Edge<T>*> getAdjacencyList() const {
+		return adjacencyList;
+	}
+
+	/*
 	 * @brief set the x coordinate of the node
 	 * @param x the new coordinate of the node
 	 */
@@ -187,6 +202,13 @@ public:
 	}
 
 	/*
+	 * @brief mark or unmark the edge
+	 */
+	void setMarked(bool marked) {
+		this->marked = marked;
+	}
+
+	/*
 	* @brief the node's label
 	* @return the node's label
 	*/
@@ -214,7 +236,7 @@ public:
 	* @brief the edge's value
 	* @return the node's value
 	*/
-	T getData() {
+	T getData() const {
 		return data;
 	}
 
@@ -222,7 +244,7 @@ public:
 	* @brief is the edge marked
 	* @return true if the edge is marked
 	*/
-	bool isMarked() {
+	bool isMarked() const {
 		return marked;
 	}
 };
@@ -269,9 +291,9 @@ public:
 	 * @param node1 starting node of the edge
 	 * @param node2 ending node of the edge 
 	 */
-	void linkNodes(std::string label, const std::unique_ptr<Node<T>>& node1, const std::unique_ptr<Node<T>>& node2) {
+	void linkNodes(std::string label, const std::unique_ptr<Node<T>>& node1, const std::unique_ptr<Node<T>>& node2, bool marked = false) {
 		if (node1 && node2) {
-			edges.insert(std::make_pair(label, std::make_unique<Edge<T>>(label, node1, node2)));
+			edges.insert(std::make_pair(label, std::make_unique<Edge<T>>(label, node1, node2, 0, marked)));
 			const std::unique_ptr<Edge<T>>& newEdge = edges[label];
 			node1->addEdge(newEdge);
 			node2->addEdge(newEdge);
@@ -286,8 +308,8 @@ public:
 	 * @param node1 starting node of the edge
 	 * @param node2 ending node of the edge
 	 */
-	void linkNodes(std::string label, std::string node1, std::string node2) {
-		linkNodes(label, nodes[node1], nodes[node2]);
+	void linkNodes(std::string label, std::string node1, std::string node2, bool marked = false) {
+		linkNodes(label, nodes[node1], nodes[node2], marked);
 	}
 	
 	/*
@@ -298,6 +320,51 @@ public:
 		nodes[edges[edge]->getStart()->getLabel()]->deleteEdge(edge);
 		nodes[edges[edge]->getEnd()->getLabel()]->deleteEdge(edge);
 		edges.erase(edge);
+	}
+
+	/*
+	* @brief mark or unmark an edge
+	* @param edge the edge to be marked or unmarked
+	* @param marked true if the edge is marked, false otherwise
+	*/
+	void markEdge(std::string edge, bool marked) {
+		edges[edge]->setMarked(marked);
+	}
+
+	/*
+	 * @brief mark or unmark a node
+	 * @param node the node to be marked or unmarked
+	 * @param marked true if the node is marked, false otherwise
+	 */
+	void markNode(std::string node, bool marked) {
+		nodes[node]->setMarked(marked);
+	}
+
+	/*
+	 * @brief mark or unmark a node and its adjacent edges
+	 * @param node the node to be marked or unmarked
+	 * @param marked true if the node is marked, false otherwise
+	 */
+	void markNodeAndEdges(std::string node, bool marked) {
+		nodes[node]->setMarked(marked);
+		const std::vector<const Edge<T>*> list = nodes[node]->getAdjacencyList();
+		for (auto it = list.begin(); it != list.end(); it++) {
+			const Edge<T>* edge = *it;
+			markEdge(edge->getLabel(), marked);
+		}
+	}
+
+	/*
+	 * @brief mark or unmark all the adjacent edges of a node, but not the node itself
+	 * @param node the node to be marked or unmarked
+	 * @param marked true if the node is marked, false otherwise
+	 */
+	void markEdgesOfNode(std::string node, bool marked) {
+		const std::vector<const Edge<T>*> list = nodes[node]->getAdjacencyList();
+		for (auto it = list.begin(); it != list.end(); it++) {
+			const Edge<T>* edge = *it;
+			markEdge(edge->getLabel(), marked);
+		}
 	}
 
 	/*

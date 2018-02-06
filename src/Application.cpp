@@ -13,7 +13,7 @@ bool Application::init() {
 	//window.setFramerateLimit(60);
 	defaultView.setSize(800, 600);
 	defaultView.setCenter(400, 300);
-	currentGraph = "G2";
+	currentGraph = "G1";
 	cam.init(0.0f, 0.0f, 800.0f, 600.0f);
 	if (!ResourceManager::loadData()) {
 		std::cout << "Failed to load data" << std::endl;
@@ -44,9 +44,9 @@ void Application::run() {
 			if (event.type == sf::Event::Resized) {
 				sf::Vector2u size = window.getSize();
 				cam.resize((float)size.x, (float)size.y);
-				defaultView.setCenter(size.x / 2, size.y / 2);
-				defaultView.setSize(size.x, size.y);
-				std::cout << "* Resizing | width: " << size.x << " | height: " << size.y << std::endl;
+				defaultView.setCenter(size.x / 2.0f, size.y / 2.0f);
+				defaultView.setSize((float)size.x, (float)size.y);
+				std::cout << "* Resizing | width: " << size.x << " - height: " << size.y << std::endl;
 			}
 			if (event.type == sf::Event::KeyPressed) {
 				keysPressed[event.key.code] = true;
@@ -71,8 +71,8 @@ void Application::inputs() {
 		keysProcessed[sf::Keyboard::R] = true;
 	}
 	if (keysPressed[sf::Keyboard::G] && !keysProcessed[sf::Keyboard::G]) {
-		ResourceManager::graphs["G2"]->clearGraph();
-		ResourceManager::generateRandomGraph("G2", 20, 20, cam.getPosition().x - 400, cam.getPosition().y - 300, 800, 600);
+		ResourceManager::graphs[currentGraph]->clearGraph();
+		ResourceManager::generateRandomGraph(currentGraph, 20, 20, (int)cam.getPosition().x - 400, (int)cam.getPosition().y - 300, 800, 600);
 		keysProcessed[sf::Keyboard::G] = true;
 	}
 	if (keysPressed[sf::Keyboard::I] && !keysProcessed[sf::Keyboard::I]) {
@@ -107,11 +107,13 @@ void Application::render() {
 	window.setView(defaultView);
 	if (showInfo) {
 		window.draw(info);
-		sf::String text = sf::String("Delta: " + std::to_string(ResourceManager::graphs[currentGraph]->getDelta()));
+		sf::String text = sf::String("Paused: " + sf::String(pause ? "true" : "false"));
+		text += ("\nDelta: " + std::to_string(ResourceManager::graphs[currentGraph]->getDelta()));
 		text += ("\nSpring factor: " + std::to_string(ResourceManager::graphs[currentGraph]->getSpringFactor()));
 		text += ("\nSpring rest length: " + std::to_string(ResourceManager::graphs[currentGraph]->getSpringRestLength()));
 		text += ("\nRepulsive factor: " + std::to_string(ResourceManager::graphs[currentGraph]->getRepulsiveFactor()));
 		text += ("\nHighest squared distance: " + std::to_string(ResourceManager::graphs[currentGraph]->getHighestSquaredDistance()));
+		text += ("\nAnimation speed: " + std::to_string(animationSpeed));
 		text += ("\nSync speed: " + sf::String(syncSpeed ? "true" : "false"));
 		info.setString(text);
 	}

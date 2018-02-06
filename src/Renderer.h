@@ -7,8 +7,9 @@
 
 class Renderer {
 public:
-	static void drawNode(sf::RenderWindow& window, float x, float y) {
+	static void drawNode(sf::RenderWindow& window, float x, float y, sf::Color color = sf::Color::White) {
 		ResourceManager::nodeRect.setPosition(x, y);
+		ResourceManager::nodeRect.setFillColor(color);
 		window.draw(ResourceManager::nodeRect);
 	}
 
@@ -20,9 +21,9 @@ public:
 		NodesRef_Int nodes = graph.getNodes();
 		EdgesRef_Int edges = graph.getEdges();
 		for (auto nodeIt = nodes.begin(); nodeIt != nodes.end(); nodeIt++) {
-			drawNode(window, nodeIt->second->getPosX(), nodeIt->second->getPosY());
+			drawNode(window, nodeIt->second->getPosX(), nodeIt->second->getPosY(), nodeIt->second->isMarked() ? sf::Color::Red : sf::Color::White);
 		}
-		sf::Vertex vertices[] = {sf::Vector2f(), sf::Vector2f()};
+		sf::Vertex vertices[] = {sf::Vertex(sf::Vector2f(), sf::Color::White), sf::Vertex(sf::Vector2f(), sf::Color::White)};
 		float xOffset = ResourceManager::nodeRect.getSize().x / 2;
 		float yOffSet = ResourceManager::nodeRect.getSize().y / 2;
 		for (auto edgeIt = edges.begin(); edgeIt != edges.end(); edgeIt++) {
@@ -31,6 +32,13 @@ public:
 			vertices[0].position.y = edge->getStart()->getPosY() + yOffSet;
 			vertices[1].position.x = edge->getEnd()->getPosX() + xOffset;
 			vertices[1].position.y = edge->getEnd()->getPosY() + yOffSet;
+			if (edge->isMarked()) {
+				vertices[0].color = sf::Color::Red;
+				vertices[1].color = sf::Color::Red;
+			} else {
+				vertices[0].color = sf::Color::White;
+				vertices[1].color = sf::Color::White;
+			}
 			drawEdge(window, vertices);
 		}
 	}

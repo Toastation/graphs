@@ -9,29 +9,36 @@ Application::~Application() {
 }
 
 bool Application::init() {
+	if (!ResourceManager::loadData()) {
+		std::cout << "Failed to load data" << std::endl;
+		return false;
+	}
+	initConstant();
 	window.create(sf::VideoMode(800, 600), "Graph");
 	//window.setFramerateLimit(60);
 	defaultView.setSize(800, 600);
 	defaultView.setCenter(400, 300);
 	currentGraph = "G1";
 	cam.init(0.0f, 0.0f, 800.0f, 600.0f);
-	if (!ResourceManager::loadData()) {
-		std::cout << "Failed to load data" << std::endl;
-		return false;
-	}
-	for (int i = 0; i < sf::Keyboard::KeyCount; i++) {
-		keysPressed[i] = false;
-		keysProcessed[i] = false;
-	}
 	animationSpeed = 2000.0f;
 	pause = false;
 	showInfo = false;
 	syncSpeed = true;
+	for (int i = 0; i < sf::Keyboard::KeyCount; i++) {
+		keysPressed[i] = false;
+		keysProcessed[i] = false;
+	}
+	leftMouseButtonPressed = false;
+	leftMouseButtonProcessed = false;
 	info.setFont(ResourceManager::fonts["infoFont"]);
 	info.setScale(0.5f, 0.5f);
 	info.setPosition(0, 0);
 	info.setFillColor(sf::Color::White);
 	return true;
+}
+
+void Application::initConstant() {
+
 }
 
 void Application::run() {
@@ -54,6 +61,17 @@ void Application::run() {
 			if (event.type == sf::Event::KeyReleased) {
 				keysPressed[event.key.code] = false;
 				keysProcessed[event.key.code] = false;
+			}
+			if (event.type == sf::Event::MouseButtonPressed) {
+				if (event.mouseButton.button == sf::Mouse::Left) {
+					leftMouseButtonPressed = true;
+				}
+			}
+			if (event.type == sf::Event::MouseButtonReleased) {
+				if (event.mouseButton.button == sf::Mouse::Left) {
+					leftMouseButtonPressed = false;
+					leftMouseButtonProcessed = false;
+				}
 			}
 		}
 		delta = (deltaClock.restart()).asSeconds();
@@ -87,6 +105,11 @@ void Application::inputs() {
 		pause = !pause;
 		keysProcessed[sf::Keyboard::P] = true;
 	}
+	if (leftMouseButtonPressed && !leftMouseButtonProcessed) {
+		leftMouseButtonProcessed = true;
+		sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+		selectNode(mousePos.x, mousePos.y, (int)cam.getPosition().x - (int)(cam.getView().getSize().x / 2), (int)cam.getPosition().y - (int)(cam.getView().getSize().y / 2));
+	}
 }
 
 void Application::update() {
@@ -115,7 +138,27 @@ void Application::render() {
 		text += ("\nHighest squared distance: " + std::to_string(ResourceManager::graphs[currentGraph]->getHighestSquaredDistance()));
 		text += ("\nAnimation speed: " + std::to_string(animationSpeed));
 		text += ("\nSync speed: " + sf::String(syncSpeed ? "true" : "false"));
+		text += ("\nMouse x = " + std::to_string(sf::Mouse::getPosition(window).x));
+		text += ("\nMouse y = " + std::to_string(sf::Mouse::getPosition(window).y));
 		info.setString(text);
 	}
 	window.display();
+}
+
+
+bool Application::selectNode(int x, int y, int camPosX, int camPosY) {
+	NodesRef_Int nodes = ResourceManager::graphs[currentGraph]->getNodes();
+	sf::Vector2i worldMousePos(x + camPosX, y + camPosY);
+	int nodeSize = (int)ResourceManager::nodeRect.getSize().x;
+	sf::Rect<int> rect(0, 0, nodeSize, nodeSize);
+	for (auto it = nodes.begin(); it != nodes.end(); it++) {
+		const std::unique_ptr<Node<int>>& node = it->second;
+		rect.left = (int)node->getPosX();
+		rect.top = (int)node->getPosY();
+		if (rect.contains(worldMousePos)) {
+			ResourceManager::graphs[currentGraph]->markNode(node->getLabel(), !(node->isMarked()));
+			return true;
+		}
+	}
+	return false;
 }

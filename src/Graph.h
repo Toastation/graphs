@@ -448,7 +448,6 @@ public:
 			node->translate(dx*deltaFrame, dy*deltaFrame);
 			node->setNetForce(0.0f, 0.0f);
 		}
-		//std::cin.get();
 	}
 
 	/*

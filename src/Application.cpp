@@ -156,7 +156,7 @@ bool Application::selectNode(int x, int y, int camPosX, int camPosY) {
 		rect.left = (int)node->getPosX();
 		rect.top = (int)node->getPosY();
 		if (rect.contains(worldMousePos)) {
-			ResourceManager::graphs[currentGraph]->markNode(node->getLabel(), !(node->isMarked()));
+			ResourceManager::graphs[currentGraph]->markNodeAndEdges(node->getLabel(), !(node->isMarked()));
 			return true;
 		}
 	}

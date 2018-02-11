@@ -20,6 +20,7 @@ class Node {
 private:
 	std::string label;
 	T data;
+	bool selected;
 	bool marked;
 	float posX;
 	float posY;
@@ -30,6 +31,7 @@ public:
 	Node(std::string label, T data, bool marked = false, float posX = 0.0f, float posY = 0.0f) {
 		this->label = label;
 		this->data = data;
+		this->selected = false;
 		this->marked = marked;
 		this->posX = posX;
 		this->posY = posY;
@@ -77,13 +79,6 @@ public:
 	void applyForce(float fx, float fy) {
 		netForceX += fx;
 		netForceY += fy;
-	}
-
-	/*
-	 * @brief mark or unmark the node
-	 */
-	void setMarked(bool marked) {
-		this->marked = marked;
 	}
 
 	/*
@@ -143,6 +138,14 @@ public:
 	}
 
 	/*
+	 * @brief returns if the node is selected or not
+	 * @return if the node is selected or not
+	 */
+	bool isSelected() const {
+		return selected;
+	}
+
+	/*
 	* @brief is the node marked
 	* @return true if the node is marked
 	*/
@@ -156,6 +159,21 @@ public:
 	 */
 	const std::vector<const Edge<T>*> getAdjacencyList() const {
 		return adjacencyList;
+	}
+
+	/*
+	 * @brief select or deselect the node
+	 * @param whether or not the node should be selected
+	 */
+	void setSelected(bool selected) {
+		this->selected = selected;
+	}
+
+	/*
+	* @brief mark or unmark the node
+	*/
+	void setMarked(bool marked) {
+		this->marked = marked;
 	}
 
 	/*
@@ -323,6 +341,33 @@ public:
 	}
 
 	/*
+	* @brief translates the position of the given node
+	* @param node the node to translate
+	* @param dx the value of translation on the x-axis
+	* @param dy the value of translation on the y-axis
+	*/
+	void translateNode(std::string node, float dx, float dy) {
+		nodes[node]->translate(dx, dy);
+	}
+
+	/*
+	 * @brief select or deselect the given node
+	 * @param the node to select/deselect
+	 */
+	void selectNode(std::string node, bool selected) {
+		nodes[node]->setSelected(selected);
+	}
+
+	/*
+	 * @brief unselect all the nodes
+	 */
+	void unselectAll() {
+		for (auto it = nodes.begin(); it != nodes.end(); it++) {
+			selectNode((it->second)->getLabel(), false);
+		}
+	}
+
+	/*
 	* @brief mark or unmark an edge
 	* @param edge the edge to be marked or unmarked
 	* @param marked true if the edge is marked, false otherwise
@@ -364,6 +409,16 @@ public:
 		for (auto it = list.begin(); it != list.end(); it++) {
 			const Edge<T>* edge = *it;
 			markEdge(edge->getLabel(), marked);
+		}
+	}
+
+	/*
+	 * @brief marl or unmark all nodes and edges of the graph
+	 * @param marked true if the node is marked, false otherwise
+	 */
+	void markAll(bool marked) {
+		for (auto it = nodes.begin(); it != nodes.end(); it++) {
+			markNodeAndEdges((it->second)->getLabel(), marked);
 		}
 	}
 
@@ -498,13 +553,16 @@ public:
 		return springRestLength;
 	}
 
+	// *** DEBUG ***
 	float getHighestSquaredDistance() const {
 		return highestSquaredDistance;
 	}
 
+	
 	void setHighestSquaredDistance(float v) {
 		highestSquaredDistance = v;
 	}
+	// *** END DEBUG ***
 
 	/*
 	 * @brief prints all the nodes labels

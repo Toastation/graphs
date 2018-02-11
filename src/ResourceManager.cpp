@@ -16,6 +16,7 @@ void ResourceManager::generateRandomGraph(std::string graphName, int maxNodes, i
 		float nodeX = (float)(x + std::rand() % width);
 		float nodeY = (float)(y + std::rand() % height);
 		bool marked = std::rand() % 2;
+		marked = false; // TODO: temporary
 		ResourceManager::graphs[graphName]->addNode(nodeLabel, 0, marked, nodeX, nodeY);
 	}
 	for (int i = 0; i < nbEdges; i++) {
@@ -26,6 +27,7 @@ void ResourceManager::generateRandomGraph(std::string graphName, int maxNodes, i
 			endNodeIndex = std::rand() % (nbNodes);
 		}
 		bool marked = std::rand() % 2;
+		marked = false; // TODO: temporary
 		std::string startNodeLabel = "N" + std::to_string(startNodeIndex);
 		std::string endNodeLabel = "N" + std::to_string(endNodeIndex);
 		ResourceManager::graphs[graphName]->linkNodes(edgeLabel, startNodeLabel, endNodeLabel, marked);

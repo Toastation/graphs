@@ -12,6 +12,8 @@ private:
 	sf::Clock deltaClock;
 	std::string currentGraph;
 	Camera cam;
+	sf::Vector2i lastMousePos;
+	sf::Vector2i currentMousePos;
 	float delta;
 	float animationSpeed;
 	bool pause;
@@ -35,12 +37,16 @@ public:
 
 	/*
 	* @brief mark the node which contains the given coordinates
-	* @param x x coordinates to check
-	* @param y y coordinates to check
 	* @param camPosX x coordinate of the cam, required to convert mouse pos to world pos
 	* @param camPosY y coordinate of the cam, required to convert mouse pos to world pos
 	* @return whether or not a node has been selected
 	*/
-	bool selectNode(int x, int y, int camPosX, int camPosY);
+	bool selectNode(int camPosX, int camPosY);
+
+	/*
+	 * @brief moves the selected nodes along with the mouse cursor
+	 * @return whether a node is selected or not
+	 */
+	bool moveSelectedNode();
 };
 

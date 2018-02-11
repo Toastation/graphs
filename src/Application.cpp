@@ -20,6 +20,8 @@ bool Application::init() {
 	defaultView.setCenter(400, 300);
 	currentGraph = "G1";
 	cam.init(0.0f, 0.0f, 800.0f, 600.0f);
+	currentMousePos = sf::Mouse::getPosition(window);
+	lastMousePos = sf::Mouse::getPosition(window);
 	animationSpeed = 2000.0f;
 	pause = false;
 	showInfo = false;
@@ -71,6 +73,7 @@ void Application::run() {
 				if (event.mouseButton.button == sf::Mouse::Left) {
 					leftMouseButtonPressed = false;
 					leftMouseButtonProcessed = false;
+					ResourceManager::graphs[currentGraph]->unselectAll();
 				}
 			}
 		}
@@ -83,6 +86,7 @@ void Application::run() {
 
 void Application::inputs() {
 	cam.processInputs(delta);
+	currentMousePos = sf::Mouse::getPosition(window);
 	if (keysPressed[sf::Keyboard::R] && !keysProcessed[sf::Keyboard::R]) {
 		ResourceManager::graphs[currentGraph]->randomizePos(cam.getPosition().x - 400, cam.getPosition().y - 300, 800, 400);
 		ResourceManager::graphs[currentGraph]->setHighestSquaredDistance(0.0f);
@@ -107,9 +111,14 @@ void Application::inputs() {
 	}
 	if (leftMouseButtonPressed && !leftMouseButtonProcessed) {
 		leftMouseButtonProcessed = true;
-		sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-		selectNode(mousePos.x, mousePos.y, (int)cam.getPosition().x - (int)(cam.getView().getSize().x / 2), (int)cam.getPosition().y - (int)(cam.getView().getSize().y / 2));
+		if (!selectNode((int)cam.getPosition().x - (int)(cam.getView().getSize().x / 2), (int)cam.getPosition().y - (int)(cam.getView().getSize().y / 2))) {
+			ResourceManager::graphs[currentGraph]->markAll(false);
+		}
 	}
+	else if (leftMouseButtonPressed && leftMouseButtonProcessed) {
+		moveSelectedNode();
+	}
+	lastMousePos = currentMousePos;
 }
 
 void Application::update() {
@@ -145,10 +154,9 @@ void Application::render() {
 	window.display();
 }
 
-
-bool Application::selectNode(int x, int y, int camPosX, int camPosY) {
+bool Application::selectNode(int camPosX, int camPosY) {
 	NodesRef_Int nodes = ResourceManager::graphs[currentGraph]->getNodes();
-	sf::Vector2i worldMousePos(x + camPosX, y + camPosY);
+	sf::Vector2i worldMousePos(currentMousePos.x + camPosX, currentMousePos.y + camPosY);
 	int nodeSize = (int)ResourceManager::nodeRect.getSize().x;
 	sf::Rect<int> rect(0, 0, nodeSize, nodeSize);
 	for (auto it = nodes.begin(); it != nodes.end(); it++) {
@@ -156,7 +164,21 @@ bool Application::selectNode(int x, int y, int camPosX, int camPosY) {
 		rect.left = (int)node->getPosX();
 		rect.top = (int)node->getPosY();
 		if (rect.contains(worldMousePos)) {
+			ResourceManager::graphs[currentGraph]->selectNode(node->getLabel(), true);
 			ResourceManager::graphs[currentGraph]->markNodeAndEdges(node->getLabel(), !(node->isMarked()));
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Application::moveSelectedNode() {
+	sf::Vector2i deltaPos = currentMousePos - lastMousePos;
+	NodesRef_Int nodes = ResourceManager::graphs[currentGraph]->getNodes();
+	for (auto it = nodes.begin(); it != nodes.end(); it++) {
+		const std::unique_ptr<Node<int>>& node = it->second;
+		if (node->isSelected()) {
+			ResourceManager::graphs[currentGraph]->translateNode(node->getLabel(), (float)deltaPos.x, (float)deltaPos.y);
 			return true;
 		}
 	}

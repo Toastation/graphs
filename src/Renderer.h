@@ -29,17 +29,17 @@ public:
 			vertices[0].position.y = edge->getStart()->getPosY() + yOffSet;
 			vertices[1].position.x = edge->getEnd()->getPosX() + xOffset;
 			vertices[1].position.y = edge->getEnd()->getPosY() + yOffSet;
-			if (edge->isMarked()) {
+			/*if (edge->isMarked()) {
 				vertices[0].color = sf::Color::Red;
 				vertices[1].color = sf::Color::Red;
 			} else {
 				vertices[0].color = sf::Color::White;
 				vertices[1].color = sf::Color::White;
-			}
+			}*/
 			drawEdge(window, vertices);
 		}
 		for (auto nodeIt = nodes.begin(); nodeIt != nodes.end(); nodeIt++) {
-			drawNode(window, nodeIt->second->getPosX(), nodeIt->second->getPosY(), nodeIt->second->isMarked() ? sf::Color::Red : sf::Color::White);
+			drawNode(window, nodeIt->second->getPosX(), nodeIt->second->getPosY(), (nodeIt->second)->isSelected() ? sf::Color::Red : sf::Color::White);
 		}
 	}
 private:

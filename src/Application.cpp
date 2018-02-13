@@ -109,6 +109,14 @@ void Application::inputs() {
 		pause = !pause;
 		keysProcessed[sf::Keyboard::P] = true;
 	}
+	if (keysPressed[sf::Keyboard::PageUp] && !keysProcessed[sf::Keyboard::PageUp]) {
+		ResourceManager::graphs[currentGraph]->increaseRatio(0.0001f);
+		keysProcessed[sf::Keyboard::PageUp] = true;
+	}
+	if (keysPressed[sf::Keyboard::PageDown] && !keysProcessed[sf::Keyboard::PageDown]) {
+		ResourceManager::graphs[currentGraph]->increaseRatio(-0.0001f);
+		keysProcessed[sf::Keyboard::PageDown] = true;
+	}
 	if (leftMouseButtonPressed && !leftMouseButtonProcessed) {
 		leftMouseButtonProcessed = true;
 		if (!selectNode((int)cam.getPosition().x - (int)(cam.getView().getSize().x / 2), (int)cam.getPosition().y - (int)(cam.getView().getSize().y / 2))) {
@@ -124,7 +132,7 @@ void Application::inputs() {
 void Application::update() {
 	if (!pause) {
 		if (syncSpeed) {
-			ResourceManager::graphs[currentGraph]->applyForces(animationSpeed*delta);
+			ResourceManager::graphs[currentGraph]->applyForces2(animationSpeed*delta);
 		}
 		else {
 			ResourceManager::graphs[currentGraph]->applyForces(1.0f);
@@ -144,6 +152,7 @@ void Application::render() {
 		text += ("\nSpring factor: " + std::to_string(ResourceManager::graphs[currentGraph]->getSpringFactor()));
 		text += ("\nSpring rest length: " + std::to_string(ResourceManager::graphs[currentGraph]->getSpringRestLength()));
 		text += ("\nRepulsive factor: " + std::to_string(ResourceManager::graphs[currentGraph]->getRepulsiveFactor()));
+		text += ("\nRatio: " + std::to_string(ResourceManager::graphs[currentGraph]->getRatio()));
 		text += ("\nHighest squared distance: " + std::to_string(ResourceManager::graphs[currentGraph]->getHighestSquaredDistance()));
 		text += ("\nAnimation speed: " + std::to_string(animationSpeed));
 		text += ("\nSync speed: " + sf::String(syncSpeed ? "true" : "false"));
@@ -165,7 +174,7 @@ bool Application::selectNode(int camPosX, int camPosY) {
 		rect.top = (int)node->getPosY();
 		if (rect.contains(worldMousePos)) {
 			ResourceManager::graphs[currentGraph]->selectNode(node->getLabel(), true);
-			ResourceManager::graphs[currentGraph]->markNodeAndEdges(node->getLabel(), !(node->isMarked()));
+			// NODE COLORING ResourceManager::graphs[currentGraph]->markNodeAndEdges(node->getLabel(), !(node->isMarked()));
 			return true;
 		}
 	}

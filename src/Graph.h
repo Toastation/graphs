@@ -280,6 +280,7 @@ private:
 	float repulsiveFactor;
 	float delta;
 	float highestSquaredDistance;
+	float ratio;
 public:
 	Graph(int reserveSize = RESERVE_SIZE_DEFAULT) {
 		this->nodes.reserve(reserveSize);
@@ -289,6 +290,7 @@ public:
 		this->repulsiveFactor = 6250.0f;
 		this->delta = 0.0004f;
 		this->highestSquaredDistance = 0.0f;
+		this->ratio = repulsiveFactor / std::pow(springRestLength, 3);
 	}
 
 	/*
@@ -506,6 +508,87 @@ public:
 	}
 
 	/*
+	* @brief applies a force-based algorithm on the node's layout
+	*/
+	void applyForces2(float deltaFrame) {
+		float dx = 0.0f;
+		float dy = 0.0f;
+		float fx = 0.0f;
+		float fy = 0.0f;
+		float distance = 0.0f;
+		float distanceSquared = 0.0f;
+		float repulsiveForceMagnitude = 0.0f;
+		float springForceMagnitude = 0.0f;
+		// compute spring forces to D1 neighbors
+		for (auto it = edges.begin(); it != edges.end(); it++) {
+			std::unique_ptr<Node<T>>& node1 = nodes[it->second->getStart()->getLabel()];
+			std::unique_ptr<Node<T>>& node2 = nodes[it->second->getEnd()->getLabel()];
+			dx = node2->getPosX() - node1->getPosX();
+			dy = node2->getPosY() - node1->getPosY();
+			distanceSquared = (dx * dx) + (dy * dy);
+			distance = std::sqrt(distanceSquared);
+			springForceMagnitude = springFactor * (distance - springRestLength);
+			fx = (springForceMagnitude * dx) / distance;
+			fy = (springForceMagnitude * dy) / distance;
+			node1->applyForce(fx, fy);
+			node2->applyForce(-fx, -fy);
+			// computing spring to D2 neighbors
+			const std::vector<const Edge<T>*> node1Neighbors = node1->getAdjacencyList();
+			const std::vector<const Edge<T>*> node2Neighbors = node2->getAdjacencyList();
+			for (auto it2 = node1Neighbors.begin(); it2 != node1Neighbors.end(); it2++) {
+				const Edge<T>* edge = *it2;
+				std::string startLabel = edge->getStart()->getLabel();
+				std::unique_ptr<Node<T>>& neighbor = (startLabel == node1->getLabel()) ? nodes[edge->getEnd()->getLabel()] : nodes[startLabel];
+				if (neighbor->getLabel() != node2->getLabel()) {
+					dx = node2->getPosX() - neighbor->getPosX();
+					dy = node2->getPosY() - neighbor->getPosY();
+					distanceSquared = (dx * dx) + (dy * dy);
+					distance = std::sqrt(distanceSquared);
+					springForceMagnitude = springFactor * (distance - (2*springRestLength));
+					fx = (springForceMagnitude * dx) / distance;
+					fy = (springForceMagnitude * dy) / distance;
+					neighbor->applyForce(fx, fy);
+					node2->applyForce(-fx, -fy);
+				}
+			}
+			for (auto it3 = node2Neighbors.begin(); it3 != node2Neighbors.end(); it3++) {
+				const Edge<T>* edge = *it3;
+				std::string startLabel = edge->getStart()->getLabel();
+				std::unique_ptr<Node<T>>& neighbor = (startLabel == node2->getLabel()) ? nodes[edge->getEnd()->getLabel()] : nodes[startLabel];
+				if (neighbor->getLabel() != node1->getLabel()) {
+					dx = neighbor->getPosX() - node1->getPosX();
+					dy = neighbor->getPosY() - node1->getPosY();
+					distanceSquared = (dx * dx) + (dy * dy);
+					distance = std::sqrt(distanceSquared);
+					springForceMagnitude = springFactor * (distance - (2 * springRestLength));
+					fx = (springForceMagnitude * dx) / distance;
+					fy = (springForceMagnitude * dy) / distance;
+					node1->applyForce(fx, fy);
+					neighbor->applyForce(-fx, -fy);
+				}
+			}
+		}
+		// update positions
+		for (auto it = nodes.begin(); it != nodes.end(); it++) {
+			std::unique_ptr<Node<T>>& node = it->second;
+			dx = delta * node->getNetForceX();
+			dy = delta * node->getNetForceY();
+			distanceSquared = (dx * dx) + (dy * dy);
+			if (distanceSquared > highestSquaredDistance) {
+				highestSquaredDistance = distanceSquared;
+			}
+			if (distanceSquared >= MAX_DISTANCE_SQUARED) {
+				float s = std::sqrt(MAX_DISTANCE_SQUARED / distanceSquared);
+				dx *= s;
+				dy *= s;
+			}
+			//std::cout << "dsquared: " << ((dx*dx) + (dy*dy)) << std::endl;
+			node->translate(dx*deltaFrame, dy*deltaFrame);
+			node->setNetForce(0.0f, 0.0f);
+		}
+	}
+
+	/*
 	 * @brief returns a const reference to the map of nodes
 	 * @return a const reference to the map of nodes
 	 */
@@ -558,9 +641,22 @@ public:
 		return highestSquaredDistance;
 	}
 
+	float getRatio() {
+		return ratio;
+	}
 	
 	void setHighestSquaredDistance(float v) {
 		highestSquaredDistance = v;
+	}
+
+	void increaseRatio(float dx) {
+		if (ratio - dx > 0) {
+			ratio += dx;
+		}
+	}
+
+	void setRatio(float newRatio) {
+		ratio = newRatio;
 	}
 	// *** END DEBUG ***
 

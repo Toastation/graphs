@@ -36,6 +36,7 @@ bool Application::init() {
 	info.setScale(0.5f, 0.5f);
 	info.setPosition(0, 0);
 	info.setFillColor(sf::Color::White);
+
 	return true;
 }
 
@@ -132,10 +133,10 @@ void Application::inputs() {
 void Application::update() {
 	if (!pause) {
 		if (syncSpeed) {
-			ResourceManager::graphs[currentGraph]->applyForces2(animationSpeed*delta);
+			ResourceManager::graphs[currentGraph]->forceBasedLayout2(animationSpeed * delta);
 		}
 		else {
-			ResourceManager::graphs[currentGraph]->applyForces(1.0f);
+			ResourceManager::graphs[currentGraph]->forceBasedLayout(1.0f);
 		}
 	}
 }

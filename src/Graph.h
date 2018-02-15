@@ -90,6 +90,29 @@ public:
 	}
 
 	/*
+	 * @brief returns a list of the nodes that are n edges apart (0 being the current node)
+	 * @param n the number of edges between the current node and the wanted nodes
+	 * @return a list of the nodes that are n edges apart
+	 */
+	std::vector<std::string> getNDistanceNeighbors(int n) {
+		if (n < 0) {
+			std::cerr << "In getNDistanceNeighbors(int n): n should > 0." << std::endl;
+			return nullptr;
+		}
+		else if (n == 0) {
+			std::vector<std::string> labelList;
+			for (auto it = adjacencyList.begin(); it != adjacencyList.end(); it++) {
+				labelList.push_back((*it)->getLabel());
+			}
+			return labelList;
+		}
+		std::vector<std::string> finalLabelList;
+		std::vector<std::string> neighborList = getNDistanceNeighbors(n - 1);
+		finalLabelList.insert(finalLabelList.end(), neighborList.begin(), neighborList.end());
+		return finalLabelList;
+	}
+
+	/*
 	* @brief the node's label
 	* @return the node's label
 	*/
@@ -446,7 +469,7 @@ public:
 	/*
 	 * @brief applies a force-based algorithm on the node's layout
 	 */
-	void applyForces(float deltaFrame) {
+	void forceBasedLayout(float deltaFrame) {
 		float dx = 0.0f;
 		float dy = 0.0f;
 		float fx = 0.0f;
@@ -510,7 +533,7 @@ public:
 	/*
 	* @brief applies a force-based algorithm on the node's layout
 	*/
-	void applyForces2(float deltaFrame) {
+	void forceBasedLayout2(float deltaFrame) {
 		float dx = 0.0f;
 		float dy = 0.0f;
 		float fx = 0.0f;

@@ -3,7 +3,6 @@ var maxDistanceSquare = 100;
 var dragForce = 10;
 
 function Node(x, y) {
-    this.id = x+y;
     this.pos = createVector(x, y);
     this.vel = createVector(0, 0);
     this.acc = createVector(0, 0);

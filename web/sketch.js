@@ -1,0 +1,108 @@
+var algo = 0;
+var paused = false;
+var nodeSelectedRight = null;
+var graph = new Graph();
+
+function setup() {
+    var canvas = createCanvas(800, 600);
+    var x = (windowWidth - width) / 2;
+    var y = (windowHeight - height) / 2;
+
+    canvas.parent('canvas_container');
+
+    graph.generateSquare();    
+}
+
+function draw() {
+    background(0);
+    if (!paused) {
+        graph.behavior();
+        graph.update();
+    }
+    else {
+        text("Paused", 10, 20);
+    }
+    graph.draw();
+}
+
+/////////////////// IO
+function keyPressed() {
+    if (keyCode === 71) { // G
+        graph.generate(10, 10);
+    }
+    if (keyCode === 82) { // R
+        graph.randomizePos();
+    }
+    if (keyCode === 80) {
+        pause();
+    }
+}
+
+function mousePressed() {
+    if (mouseButton == LEFT) {
+        for (var node in graph.nodes) {
+            if (graph.nodes[node].contains(mouseX, mouseY)) {
+                graph.nodes[node].selected = true;
+            }
+        }
+    }
+    else if (mouseButton == RIGHT) {
+        if (keyIsPressed && keyCode == 16) {
+            for (var node in graph.nodes) {
+                if (graph.nodes[node].contains(mouseX, mouseY)) {
+                    graph.deleteNode(graph.nodes[node]);
+                }
+            }
+        } else {
+            for (var node in graph.nodes) {
+                if (graph.nodes[node].contains(mouseX, mouseY)) {
+                    nodeSelectedRight = node;
+                    return;
+                }
+            }
+            nodeSelectedRight = null;
+            graph.addNode(mouseX, mouseY);
+        }
+    }
+}
+
+function mouseReleased() {
+    if (mouseButton == LEFT) {
+        for (var node in graph.nodes) {
+            graph.nodes[node].selected = false;
+        }
+    }
+    else if (mouseButton == RIGHT) {
+        if (nodeSelectedRight != null) {
+            for (var node in graph.nodes) {
+                if (graph.nodes[node].contains(mouseX, mouseY) && node != nodeSelectedRight) {
+                    graph.link(graph.nodes[nodeSelectedRight], graph.nodes[node]);
+                }
+            }
+        }
+        nodeSelectedRight = null;
+    }
+}
+//////////////////// END IO
+
+//////////////////// BEGIN INTERFACE
+function switchAlgo(version) {
+    algo = version;
+}
+
+function generate() {
+    graph.generate(10, 10);
+}
+
+function generateSquare() {
+    graph.generateSquare();
+}
+
+function randomizePos() {
+    graph.randomizePos();
+}
+
+function pause() {
+    paused = !paused;
+}
+//////////////////// END INTERFACE

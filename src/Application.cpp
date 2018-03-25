@@ -14,15 +14,24 @@ bool Application::init() {
 		return false;
 	}
 	initConstant();
+
+
+
 	window.create(sf::VideoMode(800, 600), "Graph");
-	//window.setFramerateLimit(60);
+	window.setFramerateLimit(60);
+	
+
 	defaultView.setSize(800, 600);
 	defaultView.setCenter(400, 300);
+	
 	currentGraph = "G1";
+	
 	cam.init(0.0f, 0.0f, 800.0f, 600.0f);
+	
 	currentMousePos = sf::Mouse::getPosition(window);
 	lastMousePos = sf::Mouse::getPosition(window);
 	animationSpeed = 2000.0f;
+	
 	pause = false;
 	showInfo = false;
 	syncSpeed = true;
@@ -32,11 +41,11 @@ bool Application::init() {
 	}
 	leftMouseButtonPressed = false;
 	leftMouseButtonProcessed = false;
+	
 	info.setFont(ResourceManager::fonts["infoFont"]);
 	info.setScale(0.5f, 0.5f);
 	info.setPosition(0, 0);
 	info.setFillColor(sf::Color::White);
-
 	return true;
 }
 

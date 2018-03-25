@@ -1,5 +1,7 @@
 #pragma once
 #include <iostream>
+#include <SFGUI/SFGUI.hpp>
+#include <SFGUI/Widgets.hpp>
 #include <SFML/Graphics.hpp>
 #include "ResourceManager.h"
 #include "Renderer.h"
@@ -7,6 +9,8 @@
 
 class Application {
 private:
+	sfg::SFGUI sfgui;
+	sfg::Desktop desktop;
 	sf::RenderWindow window;
 	sf::View defaultView;
 	sf::Clock deltaClock;
@@ -36,11 +40,11 @@ public:
 	void render();
 
 	/*
-	* @brief mark the node which contains the given coordinates
-	* @param camPosX x coordinate of the cam, required to convert mouse pos to world pos
-	* @param camPosY y coordinate of the cam, required to convert mouse pos to world pos
-	* @return whether or not a node has been selected
-	*/
+	 * @brief mark the node which contains the given coordinates
+	 * @param camPosX x coordinate of the cam, required to convert mouse pos to world pos
+	 * @param camPosY y coordinate of the cam, required to convert mouse pos to world pos
+	 * @return whether or not a node has been selected
+	 */
 	bool selectNode(int camPosX, int camPosY);
 
 	/*

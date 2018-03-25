@@ -531,8 +531,8 @@ public:
 	}
 
 	/*
-	* @brief applies a force-based algorithm on the node's layout
-	*/
+	 * @brief applies a force-based algorithm on the node's layout
+	 */
 	void forceBasedLayout2(float deltaFrame) {
 		float dx = 0.0f;
 		float dy = 0.0f;

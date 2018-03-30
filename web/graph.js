@@ -62,15 +62,16 @@ Node.prototype.moveTo = function(x, y) {
 }
 
 Node.prototype.getNodesOfDistance = function(dist) {
-    if (dist == 0) {
+    if (dist == 0 && !this.marked) {
         return [this];
     }
     var result = [];
+    this.marked = true;
     for (var node in this.neighbors) {
-        var neighbor = this.neighbor[node];
-        neighbor.marked = true;
-        result = result.concat(neighbor.getNodesOfDistance(n - 1));
+        var neighbor = this.neighbors[node];
+        if (!neighbor.marked) result = result.concat(neighbor.getNodesOfDistance(dist - 1));
     }
+    return result;
 }
 
 function Edge(nodeStart, nodeEnd) {
@@ -111,9 +112,9 @@ Graph.prototype.addNode = function(x, y) {
 
 Graph.prototype.deleteNode = function(node) {
     for (var edge in this.edges) {
-        if (this.edges[edge].nodeEnd == node) {
-            console.log("destroyed");
-            this.edges.splice(this.edges.indexOf(edge), 1);
+        if (this.edges[edge].nodeEnd == node || this.edges[edge].nodeStart == node) {
+            console.log(edge)
+            this.edges.splice(edge, 1);
         }
     }
     node.unlinkAll();
@@ -122,7 +123,7 @@ Graph.prototype.deleteNode = function(node) {
 
 Graph.prototype.markAll = function(state) {
     for (var node in this.nodes) {
-        this.nodes[node] = state;
+        this.nodes[node].marked = state;
     }
 }
 
@@ -168,7 +169,14 @@ Graph.prototype.generateSquare = function() {
     this.link(this.nodes[1], this.nodes[4]);
     this.link(this.nodes[2], this.nodes[4]);
     this.link(this.nodes[3], this.nodes[4]);
-    //console.log(getNDegreeNeighbors(this, this.nodes[0], 2));
+    
+    this.markAll(false);
+    var neighbors = this.nodes[0].getNodesOfDistance(2);
+    this.markAll(false);   
+    console.log(neighbors);
+    for (var node in neighbors) {
+        neighbors[node].marked = true;
+    } 
 }
 
 Graph.prototype.randomizePos = function() {
@@ -287,7 +295,9 @@ Graph.prototype.draw = function() {
     for (var node in this.nodes) {
         if (this.nodes[node].selected) {
             fill(255, 0, 0);
-        } else {
+        } else if (this.nodes[node].marked) {
+            fill(0, 255, 0);
+        }else {
             fill(255);
         }
         ellipse(this.nodes[node].pos.x, this.nodes[node].pos.y, nodeSize, nodeSize);

@@ -1,5 +1,6 @@
 var algo = 0;
 var paused = false;
+var debug = false;
 var nodeSelectedRight = null;
 var graph = new Graph();
 
@@ -22,19 +23,30 @@ function draw() {
     else {
         text("Paused", 10, 20);
     }
+
+    if (debug) {
+        fill(255);
+        text("Nodes: "+this.graph.nodes.length, 10, 50);
+        text("Edges: "+this.graph.edges.length, 10, 70);        
+    }
     graph.draw();
 }
 
 /////////////////// IO
 function keyPressed() {
-    if (keyCode === 71) { // G
-        graph.generate(10, 10);
-    }
-    if (keyCode === 82) { // R
-        graph.randomizePos();
-    }
-    if (keyCode === 80) {
-        pause();
+    switch (keyCode) {
+        case 71: // G
+            graph.generate(10, 10);        
+            break;
+        case 79: // O
+            debug = !debug;
+            break;
+        case 80: // P
+            pause();
+            break;
+        case 82: // R
+            graph.randomizePos();
+            break;
     }
 }
 

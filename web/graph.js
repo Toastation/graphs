@@ -76,7 +76,7 @@ Node.prototype.getNodesOfDistance = function(dist) {
     for (var node in this.neighbors) {
         var neighbor = this.neighbors[node];
         var next = neighbor.getNodesOfDistance(dist - 1)
-        if (next.length > 0 && result.indexOf(next[0]) == -1) result = result.concat(next);
+        if (next.length > 0 && !result.includes(next[0])) result = result.concat(next);
     }
     return result;
 }

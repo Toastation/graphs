@@ -118,12 +118,11 @@ Graph.prototype.addNode = function(x, y) {
 }
 
 Graph.prototype.deleteNode = function(node) {
-    for (var edge in this.edges) {
-        if (this.edges[edge].nodeEnd == node || this.edges[edge].nodeStart == node) {
-            console.log(edge)
-            this.edges.splice(edge, 1);
+    this.edges = this.edges.filter(
+        function(edge) {
+            return edge.nodeStart != node && edge.nodeEnd != node;
         }
-    }
+    );
     node.unlinkAll();
     this.nodes.splice(this.nodes.indexOf(node), 1);
 }

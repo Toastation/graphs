@@ -62,14 +62,21 @@ Node.prototype.moveTo = function(x, y) {
 }
 
 Node.prototype.getNodesOfDistance = function(dist) {
-    if (dist == 0 && !this.marked) {
-        return [this];
+    if (dist == 0) {
+        if (!this.marked) return [this];
+        else return [];
     }
     var result = [];
     this.marked = true;
+    if (dist >= 2) {
+        for (var node in this.neighbors) {
+            this.neighbors[node].marked = true;
+        }
+    }
     for (var node in this.neighbors) {
         var neighbor = this.neighbors[node];
-        if (!neighbor.marked) result = result.concat(neighbor.getNodesOfDistance(dist - 1));
+        var next = neighbor.getNodesOfDistance(dist - 1)
+        if (next.length > 0 && result.indexOf(next[0]) == -1) result = result.concat(next);
     }
     return result;
 }
@@ -170,13 +177,13 @@ Graph.prototype.generateSquare = function() {
     this.link(this.nodes[2], this.nodes[4]);
     this.link(this.nodes[3], this.nodes[4]);
     
-    this.markAll(false);
-    var neighbors = this.nodes[0].getNodesOfDistance(2);
-    this.markAll(false);   
-    console.log(neighbors);
-    for (var node in neighbors) {
-        neighbors[node].marked = true;
-    } 
+    // this.markAll(false);
+    // var neighbors = this.nodes[0].getNodesOfDistance(2);
+    // this.markAll(false);   
+    // console.log(neighbors);
+    // for (var node in neighbors) {
+    //     neighbors[node].marked = true;
+    // } 
 }
 
 Graph.prototype.randomizePos = function() {

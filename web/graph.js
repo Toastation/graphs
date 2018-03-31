@@ -2,6 +2,10 @@ var nodeSize = 10;
 var maxDistanceSquare = 100;
 var dragForce = 10;
 
+//////////
+// NODE //
+//////////
+
 function Node(x, y) {
     this.pos = createVector(x, y);
     this.vel = createVector(0, 0);
@@ -81,10 +85,18 @@ Node.prototype.getNodesOfDistance = function(dist) {
     return result;
 }
 
+//////////
+// EDGE //
+//////////
+
 function Edge(nodeStart, nodeEnd) {
     this.nodeStart = nodeStart;
     this.nodeEnd = nodeEnd;
 }
+
+///////////
+// GRAPH //
+///////////
 
 function Graph() {
     this.nodes = [];
@@ -177,7 +189,7 @@ Graph.prototype.generateSquare = function() {
     this.link(this.nodes[3], this.nodes[4]);
     
     // this.markAll(false);
-    // var neighbors = this.nodes[0].getNodesOfDistance(2);
+    // var neighbors = this.nodes[4].getNodesOfDistance(0);
     // this.markAll(false);   
     // console.log(neighbors);
     // for (var node in neighbors) {
@@ -209,6 +221,13 @@ Graph.prototype.behavior = function() {
     }
 }
 
+Graph.prototype.applyMarkingFunction = function(f, arg) {
+    this.markAll(false);
+    var result = f(arg);
+    this.markAll(false);
+    return result;
+}
+
 Graph.prototype.onlySpringForce = function() {
     var d = createVector(0, 0);
     var f = createVector(0, 0);
@@ -216,6 +235,8 @@ Graph.prototype.onlySpringForce = function() {
     for (var edge in this.edges) {
         var startNode = this.edges[edge].nodeStart;
         var endNode = this.edges[edge].nodeEnd;
+        
+        // Attraction between all nodes of distance 1
         d.x = endNode.pos.x - startNode.pos.x;
         d.y = endNode.pos.y - startNode.pos.y;
         dSquared = d.magSq();
@@ -225,33 +246,33 @@ Graph.prototype.onlySpringForce = function() {
         f.y = (sMag * d.y) / distance;
         startNode.applyForce(f.x, f.y);
         endNode.applyForce(-f.x, -f.y);
-        for (var start in startNode.neighbors) {
-            var startNeighbor = startNode.neighbors[start];
-            if (startNeighbor != endNode) {
-                d.x = endNode.pos.x - startNeighbor.pos.x;
-                d.y = endNode.pos.y - startNeighbor.pos.y;
-                dSquared = d.magSq();
-                distance = d.mag();
-                sMag = this.springFactor * (distance - (this.springRestLength * 2));
-                f.x = (sMag * d.x) / distance;
-                f.y = (sMag * d.y) / distance;
-                startNeighbor.applyForce(f.x, f.y);
-                endNode.applyForce(-f.x, -f.y);
-            }
+
+        // Repulsion between all nodes of distance 2
+        var startNodeNeighbors = this.applyMarkingFunction(startNode.getNodesOfDistance, 2);
+        var endNodeNeighbors = this.applyMarkingFunction(endNode.getNodesOfDistance, 2);
+        for (var startNodeNeighbor in startNodeNeighbors) {
+            var node = startNodeNeighbors[startNodeNeighbor];
+            d.x = endNode.pos.x - node.pos.x;
+            d.y = endNode.pos.y - node.pos.y;
+            dSquared = d.magSq();
+            distance = d.mag();
+            sMag = this.springFactor * (distance - (this.springRestLength * 2));
+            f.x = (sMag * d.x) / distance;
+            f.y = (sMag * d.y) / distance;
+            node.applyForce(f.x, f.y);
+            endNode.applyForce(-f.x, -f.y);
         }
-        for (var end in endNode.neighbors) {
-            var endNeighbor = endNode.neighbors[end];
-            if (endNeighbor != startNode) {
-                d.x = endNeighbor.pos.x - startNode.pos.x;
-                d.y = endNeighbor.pos.y - startNode.pos.y;
-                dSquared = d.magSq();
-                distance = d.mag();
-                sMag = this.springFactor * (distance - (this.springRestLength * 2));
-                f.x = (sMag * d.x) / distance;
-                f.y = (sMag * d.y) / distance;
-                startNode.applyForce(f.x, f.y);
-                endNeighbor.applyForce(-f.x, -f.y);
-            }
+        for (var endNodeNeighbor in endNodeNeighbors) {
+            var node = endNodeNeighbors[endNodeNeighbor];
+            d.x = node.pos.x - startNode.pos.x;
+            d.y = node.pos.y - startNode.pos.y;
+            dSquared = d.magSq();
+            distance = d.mag();
+            sMag = this.springFactor * (distance - (this.springRestLength * 2));
+            f.x = (sMag * d.x) / distance;
+            f.y = (sMag * d.y) / distance;
+            startNode.applyForce(f.x, f.y);
+            node.applyForce(-f.x, -f.y);
         }
     }
 }

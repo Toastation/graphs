@@ -4,6 +4,12 @@ var debug = false;
 var nodeSelectedRight = null;
 var graph = new Graph();
 
+var slider = document.getElementById("delta");
+var output = document.getElementById("delta_value");
+slider.value = graph.delta * 1000;
+output.innerHTML = "Delta: "+slider.value / 1000;
+
+
 function setup() {
     var canvas = createCanvas(800, 600);
     var x = (windowWidth - width) / 2;
@@ -95,6 +101,12 @@ function mouseReleased() {
         nodeSelectedRight = null;
     }
 }
+
+slider.oninput = function() {
+    graph.delta = this.value / 1000;
+    output.innerHTML = "Delta: " + this.value / 1000;
+}
+
 //////////////////// END IO
 
 //////////////////// BEGIN INTERFACE

@@ -61,8 +61,13 @@ Node.prototype.contains = function(x, y) {
 Node.prototype.moveTo = function(x, y) {
     var dx = x - this.pos.x;
     var dy = y - this.pos.y;
-    var d = sqrt(dx*dx + dy*dy);
-    this.applyForce(dx * d, dy * d);
+    var dsquared = ((dx*dx) + (dy*dy));
+    if (dsquared > maxDistanceSquare) {
+        var s = sqrt(maxDistanceSquare / dsquared);
+        dx *= s;
+        dy *= s;
+    }
+    this.applyForce(dx, dy);
 }
 
 Node.prototype.getNodesOfDistance = function(dist) {
@@ -145,13 +150,6 @@ Graph.prototype.markAll = function(state) {
     }
 }
 
-// Graph.prototype.clearNodesToDelete = function() {
-//     for (var node in this.nodesToDelete) {
-//         this.nodes.splice(this.nodesToDelete[node], 1);
-//         this.nodesToDelete.splice(node, 1);
-//     }
-// }
-
 Graph.prototype.generate = function(nbNodesMax, nbEdgesMax) {
     this.clear();
     var nbNodes = round(random(1, nbNodesMax + 1));
@@ -224,6 +222,7 @@ Graph.prototype.behavior = function() {
 Graph.prototype.applyMarkingFunction = function(f, arg) {
     this.markAll(false);
     var result = f(arg);
+    console.log(result);
     this.markAll(false);
     return result;
 }
@@ -248,8 +247,8 @@ Graph.prototype.onlySpringForce = function() {
         endNode.applyForce(-f.x, -f.y);
 
         // Repulsion between all nodes of distance 2
-        var startNodeNeighbors = this.applyMarkingFunction(startNode.getNodesOfDistance, 2);
-        var endNodeNeighbors = this.applyMarkingFunction(endNode.getNodesOfDistance, 2);
+        var startNodeNeighbors = this.applyMarkingFunction(startNode.getNodesOfDistance.bind(startNode), 2);
+        var endNodeNeighbors = this.applyMarkingFunction(endNode.getNodesOfDistance.bind(endNode), 2);        
         for (var startNodeNeighbor in startNodeNeighbors) {
             var node = startNodeNeighbors[startNodeNeighbor];
             d.x = endNode.pos.x - node.pos.x;

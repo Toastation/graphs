@@ -6,8 +6,6 @@
         <script src="p5.min.js"></script>
         <script src="addons/p5.dom.min.js"></script>
         <script src="addons/p5.sound.min.js"></script>
-        <script src="graph.js"></script>
-        <script src="sketch.js"></script>
     </head>
     <body oncontextmenu="return false;">
         <div class="tab">
@@ -19,10 +17,18 @@
         </div>
         <div id="canvas_container" class="canvas_container">
         </div>
-        <p>
-            Left-click to move nodes. <br/>
-            Right-click to add new nodes. Hold to link nodes. <br/>
-            Shift + right-click to delete nodes. <br/>
-        </p>
+        <div class="slidecontainer">
+            <input type="range" min="1" max="100" value="50" class="slider" id="delta">
+        </div>
+        <div id="delta_value"></div>
+        <div class="info">
+            <p>
+                Left-click to move nodes. <br/>
+                Right-click to add new nodes. Hold to link nodes. <br/>
+                Shift + right-click to delete nodes. <br/>
+            </p>
+        </div>
     </body>
+    <script src="graph.js"></script>
+    <script src="sketch.js"></script>
 </html>

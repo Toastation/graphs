@@ -67,7 +67,8 @@ Node.prototype.moveTo = function(x, y) {
         dx *= s;
         dy *= s;
     }
-    this.applyForce(dx, dy);
+    var d = sqrt(dsquared);
+    this.applyForce(dx * d, dy * d);
 }
 
 Node.prototype.getNodesOfDistance = function(dist) {
@@ -217,12 +218,14 @@ Graph.prototype.behavior = function() {
     else if (algo == 1) {
         this.onlySpringForce();
     }
+    else if (algo == 2) {
+        this.onlySpringForce_old();
+    }
 }
 
 Graph.prototype.applyMarkingFunction = function(f, arg) {
     this.markAll(false);
     var result = f(arg);
-    console.log(result);
     this.markAll(false);
     return result;
 }
@@ -272,9 +275,61 @@ Graph.prototype.onlySpringForce = function() {
             f.y = (sMag * d.y) / distance;
             startNode.applyForce(f.x, f.y);
             node.applyForce(-f.x, -f.y);
+        }      
+    }
+}
+
+Graph.prototype.onlySpringForce_old = function() {
+    var d = createVector(0, 0);
+    var f = createVector(0, 0);
+    var dSquared, distance, sMag, rMag;
+    for (var edge in this.edges) {
+        var startNode = this.edges[edge].nodeStart;
+        var endNode = this.edges[edge].nodeEnd;
+        
+        // Attraction between all nodes of distance 1
+        d.x = endNode.pos.x - startNode.pos.x;
+        d.y = endNode.pos.y - startNode.pos.y;
+        dSquared = d.magSq();
+        distance = d.mag();
+        sMag = this.springFactor * (distance - this.springRestLength);
+        f.x = (sMag * d.x) / distance;
+        f.y = (sMag * d.y) / distance;
+        startNode.applyForce(f.x, f.y);
+        endNode.applyForce(-f.x, -f.y);
+
+        // Repulsion between all nodes of distance 2
+        for (var start in startNode.neighbors) {
+            var startNeighbor = startNode.neighbors[start];
+            if (startNeighbor != endNode) {
+                d.x = endNode.pos.x - startNeighbor.pos.x;
+                d.y = endNode.pos.y - startNeighbor.pos.y;
+                dSquared = d.magSq();
+                distance = d.mag();
+                sMag = this.springFactor * (distance - (this.springRestLength * 2));
+                f.x = (sMag * d.x) / distance;
+                f.y = (sMag * d.y) / distance;
+                startNeighbor.applyForce(f.x, f.y);
+                endNode.applyForce(-f.x, -f.y);
+            }
+        }
+        for (var end in endNode.neighbors) {
+            var endNeighbor = endNode.neighbors[end];
+            if (endNeighbor != startNode) {
+                d.x = endNeighbor.pos.x - startNode.pos.x;
+                d.y = endNeighbor.pos.y - startNode.pos.y;
+                dSquared = d.magSq();
+                distance = d.mag();
+                sMag = this.springFactor * (distance - (this.springRestLength * 2));
+                f.x = (sMag * d.x) / distance;
+                f.y = (sMag * d.y) / distance;
+                startNode.applyForce(f.x, f.y);
+                endNeighbor.applyForce(-f.x, -f.y);
+            }
         }
     }
 }
+
 
 Graph.prototype.forceBasedRepulsive = function() {
     var d = createVector(0, 0);
